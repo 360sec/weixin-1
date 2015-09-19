@@ -104,8 +104,8 @@ class PayAction extends BaseAction{
 	    $data['merchant'] = $this->token;
 	    $data['trade'] = $this->order['orderid'];
 	    $data['price'] = $this->order['price'];
-	    $data['notify_url'] = 'http://www.abiza.cn/';
-	    $data['redirect_url'] = 'http://www.abiza.cn/';
+	    $data['notify_url'] = C('easypay.domain');
+	    $data['redirect_url'] = C('easypay.domain');
 	    
 	    
 	    // 生成MD5签名
@@ -126,7 +126,7 @@ class PayAction extends BaseAction{
 	    $data['sign'] = md5($sign_string_data.'&apikey='.$apikey);
 	    
 	    // 发起GET请求
-	    $get_url = 'http://www.easypay.com/cashier?'.
+	    $get_url = 'http://'.C('easypay.domain').'/cashier?'.
 	               'merchant='.urlencode($data['merchant']).
 	               '&trade='.urlencode($data['trade']).
 	               '&price='.urlencode($data['price']).
