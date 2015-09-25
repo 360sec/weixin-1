@@ -6,3 +6,5 @@ CREATE TABLE `zfwx_brand` (
 PRIMARY KEY (`id`), 
 UNIQUE `name_unique` (`name`)
 ) ENGINE = MyISAM CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+ALTER TABLE `zfwx_product` ADD `brand` INT(11) NULL AFTER `community_catid`;

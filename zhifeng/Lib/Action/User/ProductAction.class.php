@@ -230,6 +230,47 @@ class ProductAction extends UserAction{
         
         $this->assign('wz_cates',$wz_category_data);
         
+        
+        
+        
+        
+        
+        
+        /**
+         * 读取品牌数据
+         */
+        
+        
+        $Brand = M('Brand');
+        $brands = $Brand->where(array(
+            'status'=>1
+        ))->select();
+        
+        $brand_casual = true;
+        
+        if (empty($product['brand'])){
+            $brand_casual =false;
+        }
+        
+        foreach ($brands as $brand_item){
+            if ($brand_item['id'] == $product['brand']){
+                $brand_casual = false;
+            }
+        }
+        
+        if ($brand_casual){
+            $casual_selected_brand = $Brand->where(array(
+                'id'=>$product['brand'],
+            ))->find();
+            
+            array_push($brands, $casual_selected_brand);
+        }
+        
+        $this->assign('brands',$brands);
+        
+        
+        
+        
 		$this->assign('color', $this->color);
 		$this->assign('attributeData', $attributeData);
 		$this->assign('normsData', $normsData);
@@ -248,6 +289,7 @@ class ProductAction extends UserAction{
 		$token = isset($_POST['token']) ? htmlspecialchars($_POST['token']) : '';
 		$catid = isset($_POST['catid']) ? intval($_POST['catid']) : 0;
 		$community_catid =  isset($_POST['community_catid']) ? intval($_POST['community_catid']) : 0;
+		$brand =  isset($_POST['brand']) ? intval($_POST['brand']) : 0;
 		$num = isset($_POST['num']) ? intval($_POST['num']) : 0;
 		$pid = isset($_POST['pid']) ? intval($_POST['pid']) : 0;
 		$name = isset($_POST['name']) ? htmlspecialchars($_POST['name']) : '';
@@ -349,7 +391,7 @@ class ProductAction extends UserAction{
 		
 		
 		
-		$data = array('token' => $token, 'num' => $num, 'sort' => $sort, 'catid' => $catid, 'community_catid'=>$community_catid, 'name' => $name, 'price' => $price, 'mailprice' => $mailprice, 'vprice' => $vprice, 'oprice' => $oprice, 'intro' => $intro, 'logourl' => $pic, 'keyword' => $keyword, 'time' => time());
+		$data = array('token' => $token, 'num' => $num, 'sort' => $sort, 'catid' => $catid, 'community_catid'=>$community_catid, 'brand'=>$brand, 'name'=> $name, 'price' => $price, 'mailprice' => $mailprice, 'vprice' => $vprice, 'oprice' => $oprice, 'intro' => $intro, 'logourl' => $pic, 'keyword' => $keyword, 'time' => time());
 		$product = M('Product');
 		if ($pid && $obj = $product->where(array('id' => $pid, 'token' => $token))->find()) {
 			$product->where(array('id' => $pid, 'token' => $token))->save($data);

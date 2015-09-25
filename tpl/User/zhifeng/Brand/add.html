@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>添加品牌</title>
+<!-- Bootstrap CDN -->
+<script type="text/javascript" src="http://libs.baidu.com/jquery/1.11.1/jquery.min.js"></script> 
+<link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.2/css/bootstrap.min.css">
+<link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.2/css/bootstrap-theme.css">
+<script type="text/javascript" src="http://cdn.bootcss.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+ 
+<script src="{ZF::STATICS}/artDialog/jquery.artDialog.js?skin=default"></script>
+<script src="{ZF::STATICS}/artDialog/plugins/iframeTools.js"></script>
+<style type="text/css">
+	body{text-align:center;padding-top:20px; }
+</style> 
+</head>
+<body>
+
+<form method="post">
+
+
+<div>
+
+    
+    <!-- 输出本级未审核数据，以及新建项控件 -->
+    <div style="border:3px solid #009966;text-align:center;margin:auto;width:60%;padding-top:20px;padding-bottom:20px;margin-bottom:10px;">
+
+        
+        先在这里找找有没有你想要的品牌
+        
+            <!-- 输出已有的未审核数据 -->
+            <p>
+                <select name="preItems" id="preItems" style="width:120px;height:25px;">
+                    <volist name="preItems" id="vo">
+                        <option value="{ZF:$vo.id}">{ZF:$vo.name}</option>
+                     </volist>
+                </select>
+                <input type="button" onClick="choose()" value="选择" style="width:70px;margin:10px;">
+            </p>
+            <p style="padding-top:10px;">
+                仍然找不到？<span onClick="showaddpanel()" style="color:#FF0000; cursor:pointer;">点击此处</span>手动输入一个吧：
+            </p>
+             <p>
+                <span id="add_panel" style="display:none;padding:10px;">
+                    <input type="text" name="new_item_name" value="">
+                    <input type="submit" value="添加">
+                    <span onClick="hideaddpanel()" style="padding-left:20px;cursor:pointer;color:#333333;text-decoration:underline;">取消</span>
+                </span>
+        	</p>
+
+    </div>
+</div>
+</form>
+<script type="text/javascript">
+function showaddpanel(){
+	$("#add_panel").show("slow");
+}
+function hideaddpanel(){
+	$("#add_panel").hide("slow");
+}
+</script>
+
+<script type="text/javascript">
+function choose(){
+	//获取已选项
+	var choose_item = $("#preItems option:selected")[0];
+	//alert(window.parent);
+	var win = art.dialog.opener; //art.dialog.top;
+	var options = $(win.document.getElementById('select_brand')).find("option");
+	
+	var haved = false;
+	
+	//检查列表中是否已经添加
+	options.each(function (i){
+		
+		if (this.value == choose_item.value){
+			haved = true;
+			this.selected = true;
+		}
+		
+	});
+	var new_item = $(choose_item).clone();
+	if (!haved) $(win.document.getElementById('select_brand')).append(new_item);
+	new_item.get(0).selected = true;
+	
+	$(win.document.getElementById('select_brand')).change();
+	
+	art.dialog.close();
+}
+</script>
+
+
+</body>
+</html>
