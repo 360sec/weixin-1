@@ -246,6 +246,8 @@ class ProductAction extends UserAction{
             'status'=>1
         ))->select();
         
+        if (empty($brands)) $brands= array();
+        
         $brand_casual = true;
         
         if (empty($product['brand'])){
