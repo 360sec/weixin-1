@@ -1,8 +1,10 @@
 <include file="header"/>
+
 <style type="text/css">
 .m-select {display: box;display: -webkit-box;display: -moz-box;width:100%;}
 .m-list li .con .t{text-overflow: ellipsis;white-space: nowrap;  overflow: hidden;}
 </style>
+
 <form id="search_form" name="search_form" action="" method="post">
 	<div class="m-l-search">
 		<input type="hidden" name="wecha_id" value="{ZF:$wecha_id}">
@@ -13,42 +15,49 @@
 </form>
 
 <div class="m-select c666 order_control">
-<span><a href="javascript:" order="time" class="arrow-down">时间<i><em></em></i></a></span>
-<span><a href="javascript:" order="salecount">销量<i><em></em></i></a></span>
-<span><a href="javascript:" order="price">价格<i><em></em></i></a></span>
-<span><a href="javascript:" order="discount">折扣<i><em></em></i></a></span>
-<input type="hidden" id="view_list" value="">
-<!-- <span class="filter"><a href="javascript:;" class="ary li">排列</a><a href="javascript:;" class="flt">筛选</a></span> -->
+	<span><a href="javascript:" order="time" class="arrow-down">时间<i><em></em></i></a></span>
+	<span><a href="javascript:" order="salecount">销量<i><em></em></i></a></span>
+	<span><a href="javascript:" order="price">价格<i><em></em></i></a></span>
+	<span><a href="javascript:" order="discount">折扣<i><em></em></i></a></span>
+	<input type="hidden" id="view_list" value="">
+	<!-- <span class="filter"><a href="javascript:;" class="ary li">排列</a><a href="javascript:;" class="flt">筛选</a></span> -->
 </div>
+
+
 <ul id="m_list" class="m-list ">
-<volist name="products" id="hostlist"> 
-	<li>
-		<span class="pic">
-			<a href="{ZF::U('Product/product',array('token' => $_GET['token'], 'id' => $hostlist['id'], 'wecha_id' => $_GET['wecha_id']))}">
-			<img src="{ZF:$hostlist.logourl}" data-original="{ZF:$hostlist.logourl}">
-		</a>
-		</span>
-		<span class="con">
-			<a class="t" href="{ZF::U('Product/product',array('token' => $_GET['token'], 'id' => $hostlist['id'], 'wecha_id' => $_GET['wecha_id']))}">{ZF:$hostlist.name}</a>
-			<b>￥{ZF:$hostlist.price}</b><del>￥{ZF:$hostlist.oprice}</del>
-			<span style="display:inline-black">库存：{ZF:$hostlist.num} </span>
-			<span style="display:inline-black">邮费：<if condition="$hostlist.mailprice neq 0">￥{ZF:$hostlist.mailprice}<else/>包邮</if></span>
-		</span>
-	</li>
-</volist>
+	<volist name="products" id="hostlist"> 
+		<li>
+			<span class="pic">
+				<a href="{ZF::U('Product/product',array('token' => $_GET['token'], 'id' => $hostlist['id'], 'wecha_id' => $_GET['wecha_id']))}">
+				<img src="{ZF:$hostlist.logourl}" data-original="{ZF:$hostlist.logourl}">
+			</a>
+			</span>
+			<span class="con">
+				<a class="t" href="{ZF::U('Product/product',array('token' => $_GET['token'], 'id' => $hostlist['id'], 'wecha_id' => $_GET['wecha_id']))}">{ZF:$hostlist.name}</a>
+				<b>￥{ZF:$hostlist.price}</b><del>￥{ZF:$hostlist.oprice}</del>
+				<span style="display:inline-black">库存：{ZF:$hostlist.num} </span>
+				<span style="display:inline-black">邮费：<if condition="$hostlist.mailprice neq 0">￥{ZF:$hostlist.mailprice}<else/>包邮</if></span>
+			</span>
+		</li>
+	</volist>
 </ul>
+
 <a class="more" id="show_more" page="2" style="display: none;" href="javascript:void(0);">加载更多</a>
+
 <input type="hidden" value="1" id="pageid" />
 <input type="hidden" id="canScroll" value="1" />
+
 <script type="text/javascript">
 $(function() {
+	
+	// 确保搜索词不为空
 	$('#search_form').submit(function() {
 		var search_name = $('#search_name').val();
 		if (search_name == '') {
 			return false;
 		}
-	});
-
+	}
+	
 	//点击排序
 	var base_url = '{ZF::U('Product/products',array('token'=>$_GET['token'],'catid'=>$thisCat['id'],'wecha_id'=>$_GET['wecha_id']))}';
 	var b_url = '<if condition="$isSearch neq 1">{ZF::U('Product/ajaxProducts',array('token'=>$_GET['token'],'catid'=>$thisCat['id'],'wecha_id'=>$_GET['wecha_id']))}<else/>{ZF::U('Product/ajaxProducts',array('token'=>$_GET['token'],'keyword'=>$_GET['keyword'],'wecha_id'=>$_GET['wecha_id']))}</if>'
@@ -79,19 +88,36 @@ $(function() {
 	var com_link = '{ZF::U('Product/product',array('token'=>$_GET['token'],'wecha_id'=>$_GET['wecha_id']))}';
 	var label_arr = ["\u8bf7\u9009\u62e9\u6807\u7b7e","\u70ed\u5356","\u7206\u6b3e"];
 	if (pages > 1) {
+		
+		// 有2页以上，可以加载
+		
+		// 当前要加载的页码
 		var _page = $('#show_more').attr('page');
+		
+		// 绑定滚动事件，触发加载代码
 		$(window).bind("scroll",function() {
+			
+			// 如果滚动到底部，就开始加载，否则不动
 			if ($(document).scrollTop() + $(window).height() >= $(document).height()) {
+				
+				// 如果要加载的页码，比总页数大，则没有更多了并停止加载
 				if (_page > pages) {
 					$('#show_more').show().html('没有更多了').delay(2300).slideUp(1600);
 					return;
 				}
+				
+				// 显示加载中...
 				$('#show_more').show().html('加载中...');
+				
+				// 如果正在加载进程，并且等待完成，则停止执行新的加载
 				if($('#canScroll').val()==0){//不要重复加载
 					return;
 				}
+				
+				// 标识为正在加载中，并开始加载
 				$('#canScroll').attr('value',0);
 				$.ajax({
+					
 					type : "GET",
 					data : {'page' : _page, 'inajax' : 1},
 					url :  b_url + '&order=' + order + '&method=' + _get_method + '&pagesize='+pagesize,
@@ -100,21 +126,30 @@ $(function() {
 						},
 					dataType : "json",
 					success : function(RES) {console.log(RES);
+					
+						// 标识加载进程完成
 						$('#canScroll').attr('value',1);
 						$('#show_more').hide().html('加载更多');
+						
 						data = RES.products;
+						
+						// 如果成功地查询了数据，则把加载页码改成下一页
 						if(data.length){
 							$('#show_more').attr('page',parseInt(_page)+1);
 						}
-						_page = $('#show_more').attr('page');
+						_page = $('#show_more').attr('page'); // ????????? 这行好像是没有什么作用的吧……
+						
+						// 显示已加载的数据
 						var _tmp_html = '';
 						$.each(data, function(x, y) {
+							
 							var mail_price=y.mailprice;
 							if(mail_price==0){
 								mail_price="包邮";
 							}else{
 								mail_price="￥"+y.mailprice;
 							}
+							
 							_tmp_html +='<li>'+
 											'<span class="pic">' +
 												'<a href="' + com_link + '&id=' + y.id + '">' +
@@ -131,6 +166,8 @@ $(function() {
 										'</li>';
 						});
 						$('#m_list').append(_tmp_html);
+						
+						
 					}
 				});
 			}
