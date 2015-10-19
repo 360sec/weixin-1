@@ -32,7 +32,40 @@ class PaymentAction extends UserAction{
 	        $this->assign('urltype_encrypted_token',$urltype_encrypted_token);
 	        $this->assign('urltype_encrypted_ip',$urltype_encrypted_ip);
 	        
-	        $this->display();
+	        
+	        // 开关设置
+	        $payset = $this->Payment_db->where(array('token'=>$this->token,'pay_code'=>'easypay'))->find();
+	        
+	        $enable = 0;
+	        if (!empty($payset)){
+	            $enable = intval($payset['enabled']);
+	        }
+	        
+	        $this->assign('enabled',$enable);
+	        
+	        if(IS_POST){
+	            
+	            $row=array();
+	            $row['enabled']= $this->_post('enabled');
+	            $row['pay_config']= '{}';
+	            
+	            if ($payset){
+	                $where=array('id'=>$payset['id']);
+	                $this->Payment_db->where($where)->save($row);
+	            }else {
+	                $row['pay_code']= 'easypay';
+	                $row['pay_name']= "支付宝（亚天担保）";
+	                $row['token']= $this->token;
+	                $this->Payment_db->add($row);
+	            }
+	            $this->success('设置成功',U('Payment/easypay'));
+	        }else{
+	            
+	            $this->display();
+	        }
+	        
+	        
+	        
 	    }else{
 	        exit('数据加密时出错：公钥不存在或无效！');
 	    }
