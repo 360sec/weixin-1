@@ -54,7 +54,7 @@ class PaymentAction extends UserAction{
 	                $this->Payment_db->where($where)->save($row);
 	            }else {
 	                $row['pay_code']= 'easypay';
-	                $row['pay_name']= "支付宝（亚天担保）";
+	                $row['pay_name']= "支付宝(亚天担保)";
 	                $row['token']= $this->token;
 	                $this->Payment_db->add($row);
 	            }
