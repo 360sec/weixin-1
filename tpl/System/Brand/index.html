@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>品牌审核管理</title>
+<link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.2/css/bootstrap.min.css">
+<style type="text/css">
+li{list-style:none;float:left;}
+li a{font-size:18px;text-decoration:none;}
+table,th{text-align:center;}
+th{font-size:18px;}
+</style>
+<link href="http://cdn.bootcss.com/bootstrap/3.3.4/css/bootstrap-theme.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="http://cdn.bootcss.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+</head>
+<body>
+
+
+<notempty name="brand_data">
+<table  class="table table-striped" width="100%" style="">
+    <tr>
+        <th>编号</th>
+        <th>品牌名称</th>
+        <th>状态</th>
+        <th>操作</th>
+    </tr>
+<volist name="brand_data" id="vo">
+
+	<tr>
+		<td>
+		{ZF:$vo['id']}
+        </td>
+        <td style=" font-weight:bold; font-size:16px;">
+        {ZF:$vo['name']}
+		</td>
+		
+		<td>
+		<php>
+		     if ($vo['status'] == 0) echo '<span style="color:red;">未审核</span>';
+		     else echo '<span style="color:green;">已审核</span>';
+		</php>
+		</td>
+		
+		<td><a href="{ZF::U('System/Brand/ok',array('id'=>$vo['id']))}">通过审核</a> |
+		    <a href="{ZF::U('System/Brand/del',array('id'=>$vo['id']))}">删除</a></td>
+	</tr>
+</volist>
+</table>
+<else/>
+没有数据喔
+</notempty>
+
+
+    
+
+
+
+
+</body>
+</html>
