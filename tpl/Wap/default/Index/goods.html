@@ -73,8 +73,10 @@ $(document).ready(function($){
 			$.each(goods,function(key,data){
 				html += '<a href="{ZF::U('Product/product',array('wecha_id' => $_GET['wecha_id']))}&token='+data.token+'&id='+data.id+'">';
 				html += '<div class="goods_img_wrap"><img src="'+data.logourl+'"></div>';
-				html += '<h6>'+data.name+'</h6>';
-				html += '<b>￥'+data.price+'</b><del>￥'+data.oprice+'</del>';
+				html += '<span><div class="goods_info_wrap">';
+				html += 	'<h4>'+data.name+'</h4>';
+				html += 	'<b class="h5 inline_item" style="color:red;">￥'+data.price+'</b><del class="h6 inline_item" style="color:gray;">￥'+data.oprice+'</del><span class="inline_item" style="border-radius:3px;padding:0 5px; background:#CE0000; color:#FFF; margin-left:30px;">Buy it</span>';
+				html += '</div></span>';
 				html += '</a>';
 			});
 			html += '</div>';
@@ -110,21 +112,27 @@ $(document).ready(function($){
 	
 	$('#search_btn').bind('click',myserchfun);
 	
+	$('#btn_show_panel').bind('click',function(){
+		$('.top_controller_table').fadeToggle("slow");
+	});
+	
+	
 	
 });
 </script>
 <style type="text/css">
 .top_bar {background:#337ab7; height:100%; padding:10px 0px; color:#FFF;}
-.top_controller {background:#5bc0de;}
+.top_controller {}
+.top_controller_table { margin:0;}
 .top_controller_table th {width:50px; background: #EEE;}
 .top_controller_table input { width:100%;}
 .inline_item {display:inline-block; padding:0 3px;}
 
 #goods_list { padding:15px;}
 .goodslist_list a{ display:block; overflow:hidden; border-bottom:1px solid #EFEFEF; padding:8px 0;}
-.goodslist_list img {}
-.goodslist_list div.goods_img_wrap { width:90px; height:90px; overflow:hidden; background:#999; float:left;}
-.goodslist_list div.goods_info_wrap { width:90px; height:90px; overflow:hidden; background:#999; float:left;}
+.goodslist_list img {width:90px;  height:90px;}
+.goodslist_list div.goods_img_wrap { width:100px; height:100px; padding:4px; border:1px solid #EEE; overflow:hidden; background:#FFF; float:left;}
+.goodslist_list div.goods_info_wrap {background:#FEFEFE; padding-left:110px;} 
 
 </style>
 
@@ -133,18 +141,18 @@ $(document).ready(function($){
 
 <div class="container-fluid">
 
-	<div class="row" style="margin:0 -30px;">
-		<div class="col-xs-12">
+	<div class="row">
+		<div class="col-xs-12" style="padding:0;">
 			<div class="top_bar text-center">
 				<h4><span class="inline_item">所有类别 |</span><span class="inline_item">所有品牌 |</span><span class="inline_item">第23/45页</span></h4><h6>搜索：大码</h6>
 			</div>
 		</div>
 	</div>
 	
-	<div class="row" style="margin:0 -30px;">
-		<div class="col-xs-12">
+	<div class="row">
+		<div class="col-xs-12" style="padding:0;">
 			<div class="top_controller">
-				<table class="table top_controller_table">
+				<table class="table top_controller_table" style="display:none;">
 					<tr>
 						<th>类别</th>
 						<td>
@@ -168,12 +176,13 @@ $(document).ready(function($){
 						<td></td>
 					</tr>
 				</table>
+				<div id="btn_show_panel" style="border-top:1px solid #EEE; line-height:30px;" class="text-center">更改选项</div>
 			</div>
 		</div>
 	</div>
 	
-	<div class="row" style="margin:0 -30px;">
-		<div class="col-xs-12">
+	<div class="row">
+		<div class="col-xs-12" style="padding:0;">
 			<div id="goods_list"></div>
 		</div>
 	</div>
