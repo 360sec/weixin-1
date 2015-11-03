@@ -84,6 +84,20 @@ class IndexAction extends WapAction{
 		
 		$goods = array();
 		$where = array();
+		
+		// 查找所有品牌数据
+		$brands = M('Brand')->where(array(
+		    'status'=>1,
+		))->select();
+		
+		$brand_id = 0;
+		if (!empty($_GET['brand_id'])){
+		    $brand_id = intval($_GET['brand_id']);
+		}
+		
+		if (!empty($brand_id)){
+		    $where['brand'] = $brand_id;
+		}
 
 		$shopclassify=M('Classify')->where(array('token'=>$this->_get('token'),'status'=>1,'id'=>$_GET['catid']))->order('sorts desc')->select();
 		$shopclassify=$this->convertLinks($shopclassify);//加外链等信息
@@ -119,12 +133,8 @@ class IndexAction extends WapAction{
 			$where['name'] = array('like','%'.$keyword.'%');
 		}
 		
-		
-		// 异步分页加载
-		
 		$page_size = 10;
 		$current_page = 1;
-
 		
 		if (!empty($_GET['current_page'])){
 			$current_page = intval($_GET['current_page']);
@@ -133,26 +143,25 @@ class IndexAction extends WapAction{
 		$limt_offset = ($current_page*$page_size)-$page_size;
 		
 		$goods = M('Product')->where($where)->limit($limt_offset,$page_size)->select();
-		
-		if (!empty($_GET['json'])){
-			
-			echo json_encode($goods);
-			exit();
-			
-		}else{
-			
-			$info = $this->getClassfy();
-			
-			$this->assign('allClasses',$this->allClasses);
-			$this->assign('classfy',$info);
-			$this->assign('page_size',$page_size);
-			$this->assign('goods',$goods);
-			$this->display();
-			
-		}
-		
+		$goods_count = M('Product')->where($where)->field('count(*)')->getField('count(*)');
 
 		
+		$info = $this->getClassfy();
+		
+		$this->assign('allClasses',$this->allClasses);
+		$this->assign('classfy',$info);
+		$this->assign('page_size',$page_size);
+		$this->assign('goods',$goods);
+		$this->assign('keyword',$keyword);
+		$this->assign('brands',$brands);
+		$this->assign('brand_id',$brand_id);
+		$this->assign('community_catid',$community_catid);
+		$this->assign('page_size',$page_size);
+		$this->assign('goods_count',$goods_count);
+		$this->assign('page_count',ceil($goods_count/$page_size));
+		$this->assign('current_page',$current_page);
+		$this->display();
+
 	}
 	
 	/**

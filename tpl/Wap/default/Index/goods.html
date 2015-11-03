@@ -3,56 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>商品分类-{ZF:$wxuser.wxname}</title>
+<title>商品搜索-{ZF:$wxuser.wxname}</title>
 
 <script type="text/javascript" src="http://cdn.bootcss.com/jquery/2.1.4/jquery.min.js"></script>
 
 <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.2/css/bootstrap.min.css"/>
 <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.2/css/bootstrap-theme.css">
 <script type="text/javascript" src="http://cdn.bootcss.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
-
-<!-- <script src="http://cdn.bootcss.com/jqueryui/1.11.4/jquery-ui.min.js" type="text/javascript"></script>
-<link rel="stylesheet" href="http://cdn.bootcss.com/jqueryui/1.11.4/jquery-ui.min.css"> -->
-
-<!-- <link href="tpl/Wap/default/common/list3_products/css/reset.css" rel="stylesheet">
-<link href="tpl/Wap/default/common/list3_products/css/glist.css" rel="stylesheet">
-<script src="tpl/Wap/default/common/list3_products/js/glist.js"></script> -->
-
-
-<!-- <style type="text/css">
-
-a:hover{text-decoration: none;}
-.pic img{width:100%};
-.con{display: block;}
-.con a{font-size:14px;color:#666;padding-left: 5px;padding-right: 5px;}
-.con b{font-size:16px;color:red;padding-left: 5px;}
-.con del{font-size:14px;color:#ccc;padding-left: 5px;}
-.img_box{overflow: hidden;}
-.t{padding-top:5px;margin-bottom:5px;display: block;height:30px;line-height: 30px;overflow: hidden;}
-.pro_box{padding-right:5px;padding-left: 10px;background:#f1f1f1;}
-.pro_box:nth-child(2n){padding-right: 10px;padding-left:5px;}
-.container{padding-left: 0;padding-right: 0;}
-.sideBar ul li a.level1{padding-top:20px;font-size:16px;}
-.sideBar ul li a{font-size:14px;}
-.order_control{width:100%;background:#f8f8f8;-webkit-box-shadow: 0 3px 3px rgba(0,0,0,0.1);}
-.order_control div{border-bottom:1px solid #ddd;line-height:40px;}
-.order_control div a{color:#666;font-size:13px;font-family: '微软雅黑';}
-.glist_header ul li span{height:auto;padding:0 8px;min-width:15px;  display: none;}
-.glist_header ul li span a{width:auto;height:auto;}
-.dropdown-menu a{padding-left: 15px;padding-right: 15px;}
-.glyphicon-arrow-up:before{font-size:12px;float: right;padding-top:5px;}
-.glyphicon-arrow-down:before{font-size:12px;float: right;padding-top:5px;}
-.active{display:block;}
-.dropdown-menu{position:static;}
-.up div{border:none;background: url(/tpl/Wap/default/common/css/product/css/img/white_up.png) no-repeat top;height:22px;width:25px;display: inline-block;}
-.arrow-up div{background: url(/tpl/Wap/default/common/css/product/css/img/up.png) no-repeat top;height:22px;width:25px;display: inline-block;border:none;}
-.arrow-down div{background: url(/tpl/Wap/default/common/css/product/css/img/down.png) no-repeat top;height:22px;width:25px;display: inline-block;border:none;}
-.glist_header ul li{text-align: right;}
-.glist_header ul{overflow: hidden;}
-.sideBar ul li:nth-last-of-type(n+2){border:none;}
-.sideBar ul li{//border-bottom:1px solid #737d79;}
-
-</style> -->
 
 <script type="text/javascript">
 
@@ -94,8 +51,9 @@ $(document).ready(function($){
 	var goods = {ZF::json_encode($goods)};
 	
 	// 显示商品列表
-	$('#goods_list').append(format_goods(goods));
-	
+	if (goods){
+		$('#goods_list').append(format_goods(goods));
+	}
 	
 	// 搜索
 	var myserchfun = function(){
@@ -127,6 +85,7 @@ $(document).ready(function($){
 .top_controller_table th {width:50px; background: #EEE;}
 .top_controller_table input { width:100%;}
 .inline_item {display:inline-block; padding:0 3px;}
+.page_num { padding-right:10px; font-size:120%; }
 
 #goods_list { padding:15px;}
 .goodslist_list a{ display:block; overflow:hidden; border-bottom:1px solid #EFEFEF; padding:8px 0;}
@@ -144,7 +103,22 @@ $(document).ready(function($){
 	<div class="row">
 		<div class="col-xs-12" style="padding:0;">
 			<div class="top_bar text-center">
-				<h4><span class="inline_item">所有类别 |</span><span class="inline_item">所有品牌 |</span><span class="inline_item">第23/45页</span></h4><h6>搜索：大码</h6>
+				<h4><span class="inline_item">
+				<php>
+					$community_cat_name = '所有品牌';
+					foreach($allClasses as $allClasses_item){
+						if ($allClasses_item['id'] == $community_catid) $community_cat_name = $allClasses_item['name'];
+					}
+				</php>{ZF:$community_cat_name} |</span><span class="inline_item">
+				<php>
+					$brand_name = '所有品牌';
+					foreach($brands as $brands_item){
+						if ($brands_item['id'] == $brand_id) $brand_name = $brands_item['name'];
+					}
+				</php>{ZF:$brand_name} |</span><span class="inline_item">第{ZF:$current_page}/{ZF:$page_count}页</span></h4>
+				<if condition="!empty($keyword)">
+					<h6>搜索：{ZF:$keyword}</h6>
+				</if>
 			</div>
 		</div>
 	</div>
@@ -157,26 +131,69 @@ $(document).ready(function($){
 						<th>类别</th>
 						<td>
 							<div>
+								<a href="{ZF::U('Wap/Index/goods',array('token'=>$token,'brand_id'=>$brand_id,'wecha_id'=>$wecha_id))}" class="inline_item"<if condition="empty($community_catid)"> style="background:#EEE;"</if>>所有类别</a>
 								<volist name="classfy" id="vo">
-									<a  href="{ZF::U('Wap/Index/goods',array('token'=>$token,'catid'=>$vo['id'],'wecha_id'=>$wecha_id))}" class="inline_item">{ZF:$vo.name}</a>
+									<if condition="!empty($vo[sub])">
+										<div>
+										<a href="{ZF::U('Wap/Index/goods',array('token'=>$token,'catid'=>$vo['id'],'brand_id'=>$brand_id,'wecha_id'=>$wecha_id))}" class="inline_item"<if condition="$vo['id'] eq $community_catid"> style="background:#EEE;"</if>>{ZF:$vo.name}</a>
+										|
+										<volist name="vo[sub]" id="vo2">
+											<a href="{ZF::U('Wap/Index/goods',array('token'=>$token,'catid'=>$vo2['id'],'brand_id'=>$brand_id,'wecha_id'=>$wecha_id))}" class="inline_item"<if condition="$vo2['id'] eq $community_catid"> style="background:#EEE;"</if>>{ZF:$vo2.name}</a>
+										</volist>
+										</div>
+									<else/>
+										<a href="{ZF::U('Wap/Index/goods',array('token'=>$token,'catid'=>$vo['id'],'brand_id'=>$brand_id,'wecha_id'=>$wecha_id))}" class="inline_item"<if condition="$vo['id'] eq $community_catid"> style="background:#EEE;"</if>>{ZF:$vo.name}</a>
+									</if>
 								</volist>
 							</div>
 						</td>
 					</tr>
 					<tr>
 						<th>品牌</th>
-						<td><div>HUGO BOSS GUCCI 伊思 CHANEL CK 伊思 CHANEL CK 伊思 AK </div></td>
+						<td>
+							<div>
+								<a href="{ZF::U('Wap/Index/goods',array('token'=>$token,'catid'=>$community_catid,'wecha_id'=>$wecha_id))}" class="inline_item"<if condition="empty($brand_id)"> style="background:#EEE;"</if>>所有品牌</a>
+								<volist name="brands" id="vo">
+									<a href="{ZF::U('Wap/Index/goods',array('token'=>$token,'catid'=>$community_catid,'brand_id'=>$vo['id'],'wecha_id'=>$wecha_id))}" class="inline_item"<if condition="$vo['id'] eq $brand_id"> style="background:#EEE;"</if>>{ZF:$vo.name}</a>
+								</volist>
+							</div>
+						</td>
 					</tr>
 					<tr>
 						<th>搜索</th>
-						<td><div><input type="text" name="search" value="请输入关键字"></div></td>
+						<td>
+							<div><input type="text" name="search" id="keyword" placeholder="请输入关键字" value="{ZF:$keyword}"></div>
+							<div><input type="button" id="search_btn" style="height:35px;border-width:0px; background: #666; color:white;" value="搜索"></div>
+						</td>
 					</tr>
 					<tr>
 						<th>页码</th>
-						<td></td>
+						<td><div class="text-center">
+								<div>共{ZF:$goods_count}个商品，每页{ZF:$page_size}个，共{ZF:$page_count}页</div>
+								<div>
+									<php>
+									$start_i = intval($current_page)-5;
+									$end_i = intval($current_page)+5;
+									if ($start_i < 1) $start_i = 1;
+									if ($end_i > $page_count) $end_i = $page_count;
+									
+										for($i=$start_i; $i <=$end_i; $i++){
+											$page_url = U('Wap/Index/goods',array('token'=>$token,'catid'=>$community_catid,'brand_id'=>$brand_id,'keyword'=>$keyword,'current_page'=>$i,'wecha_id'=>$wecha_id));
+											$page_link = '<a href="'.$page_url.'" class="inline_item page_num"';
+											if ($current_page == $i){
+												$page_link .= ' style="background:#EEE;"';
+											}
+											$page_link .= '>'.$i.'</a>';
+											echo $page_link;
+										} 
+	
+									</php>
+								</div>
+							</div>
+						</td>
 					</tr>
 				</table>
-				<div id="btn_show_panel" style="border-top:1px solid #EEE; line-height:30px;" class="text-center">更改选项</div>
+				<div id="btn_show_panel" style="border-top:1px solid #EEE; line-height:30px; background:#EEE;" class="text-center"><span class="glyphicon glyphicon-menu-hamburger" aria-hidden="true"></span>&nbsp;更改选项</div>
 			</div>
 		</div>
 	</div>
@@ -184,6 +201,28 @@ $(document).ready(function($){
 	<div class="row">
 		<div class="col-xs-12" style="padding:0;">
 			<div id="goods_list"></div>
+			<div class="text-center" style="padding:20px 0px;">
+				<div>共{ZF:$goods_count}个商品，每页{ZF:$page_size}个，共{ZF:$page_count}页</div>
+				<div>
+									<php>
+									$start_i = intval($current_page)-5;
+									$end_i = intval($current_page)+5;
+									if ($start_i < 1) $start_i = 1;
+									if ($end_i > $page_count) $end_i = $page_count;
+									
+										for($i=$start_i; $i <=$end_i; $i++){
+											$page_url = U('Wap/Index/goods',array('token'=>$token,'catid'=>$community_catid,'brand_id'=>$brand_id,'keyword'=>$keyword,'current_page'=>$i,'wecha_id'=>$wecha_id));
+											$page_link = '<a href="'.$page_url.'" class="inline_item page_num"';
+											if ($current_page == $i){
+												$page_link .= ' style="background:#EEE;"';
+											}
+											$page_link .= '>'.$i.'</a>';
+											echo $page_link;
+										} 
+	
+									</php>
+				</div>
+			</div>
 		</div>
 	</div>
 	
@@ -314,7 +353,7 @@ $(document).ready(function($){
         </div>
     </div> -->
  <php>
- //print_r($classfy);
+ //print_r($allClasses);
  </php>
 </body>
 </html>
