@@ -554,11 +554,15 @@ $('.nav_bottom').flickity({
 							$numb = mt_rand(0,count($color)-1);
 						} 
 					</php>
-						<if condition="$vo['icon'] eq ''">
-							<div style="background: #ccc;border-radius:50px;height:50px;width:50px;margin:0 auto;color:white;padding-top: 12px;" ><img style="height:25px; display:inline;" class="img-responsive" alt="我的小区" src="{ZF::STATICS}/logo-xiaoqu.png"></div>
-						<else/>
-							<div style="background: <php>echo $color[$numb];</php>;border-radius:50px;height:50px;width:50px;margin:0 auto;"><span class="{ZF:$vo.icon}"  style="text-align:center;padding:10px;line-height: 50px;font-size:24px;color:#fff;"></span></div>
-						</if>
+						    <if condition="$vo['img'] neq ''">
+						    	<div style="background-image:url({ZF:$vo['img']}); background-position:center center; border-radius:50px;height:50px;width:50px;margin:0 auto;color:white;padding-top: 12px;" ></div>
+						    <else />
+								<if condition="$vo['icon'] eq ''">
+									<div style="background: #ccc;border-radius:50px;height:50px;width:50px;margin:0 auto;color:white;padding-top: 12px;" ><img style="height:25px; display:inline;" class="img-responsive" alt="{ZF:$vo.name}" src="{ZF::STATICS}/logo-xiaoqu.png"></div>
+								<else/>
+									<div style="background: <php>echo $color[$numb];</php>;border-radius:50px;height:50px;width:50px;margin:0 auto;"><span class="{ZF:$vo.icon}"  style="text-align:center;padding:10px;line-height: 50px;font-size:24px;color:#fff;"></span></div>
+								</if>
+						    </if>
 					</div>
 					<span style="display:block;color:#999;padding-top:5px;"  id="get_co">{ZF:$vo.name}</span>
 				</div>
