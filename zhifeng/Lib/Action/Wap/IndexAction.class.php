@@ -85,10 +85,10 @@ class IndexAction extends WapAction{
 		$goods = array();
 		$where = array();
 		
-		// 查找所有品牌数据
-		$brands = M('Brand')->where(array(
-		    'status'=>1,
-		))->select();
+		
+		
+		
+		
 		
 		$brand_id = 0;
 		if (!empty($_GET['brand_id'])){
@@ -115,12 +115,29 @@ class IndexAction extends WapAction{
 		
 		$catids_str = strval($community_catid);
 		foreach ($allChilds as $child){
-			if (!empty($catids_str)) $catids_str = $catids_str .',';
+			if ($catids_str!=='') $catids_str = $catids_str .',';
 			
 			$catids_str = $catids_str . $child;
 		}
 		
-		$where['community_catid'] = array('in',$catids_str); 
+		$where['community_catid'] = array('in',$catids_str);
+		
+		// 过滤掉没有商品数据的品牌
+		// 先找出所有当前分类下商品所选择的品牌id
+		$goods_brands_m = M('Product');
+		$goods_brands = $goods_brands_m->field('distinct brand')->where('`brand`!=0 AND `community_catid` in ('.$catids_str.')')->select();
+		
+		$goods_brands_ids = '';
+		foreach ($goods_brands as $goods_brands_row) {
+		    if ($goods_brands_ids!=='') $goods_brands_ids = $goods_brands_ids .',';
+		    	
+		    $goods_brands_ids = $goods_brands_ids . $goods_brands_row['brand'];
+		}
+		
+		
+		// 查找所有品牌数据
+		$brands = M('Brand')->where('status=1 AND id in('.$goods_brands_ids.')')->select();
+		
 		
 		
 		$keyword = ''; // 默认搜索关键字，为空字符串时不搜索

@@ -131,18 +131,18 @@ $(document).ready(function($){
 						<th>类别</th>
 						<td>
 							<div>
-								<a href="{ZF::U('Wap/Index/goods',array('token'=>$token,'brand_id'=>$brand_id,'wecha_id'=>$wecha_id))}" class="inline_item"<if condition="empty($community_catid)"> style="background:#EEE;"</if>>所有类别</a>
+								<a href="{ZF::U('Wap/Index/goods',array('token'=>$token,'wecha_id'=>$wecha_id))}" class="inline_item"<if condition="empty($community_catid)"> style="background:#EEE;"</if>>所有类别</a>
 								<volist name="classfy" id="vo">
 									<if condition="!empty($vo[sub])">
 										<div>
-										<a href="{ZF::U('Wap/Index/goods',array('token'=>$token,'catid'=>$vo['id'],'brand_id'=>$brand_id,'wecha_id'=>$wecha_id))}" class="inline_item"<if condition="$vo['id'] eq $community_catid"> style="background:#EEE;"</if>>{ZF:$vo.name}</a>
+										<a href="{ZF::U('Wap/Index/goods',array('token'=>$token,'catid'=>$vo['id'],'wecha_id'=>$wecha_id))}" class="inline_item"<if condition="$vo['id'] eq $community_catid"> style="background:#EEE;"</if>>{ZF:$vo.name}</a>
 										|
 										<volist name="vo[sub]" id="vo2">
-											<a href="{ZF::U('Wap/Index/goods',array('token'=>$token,'catid'=>$vo2['id'],'brand_id'=>$brand_id,'wecha_id'=>$wecha_id))}" class="inline_item"<if condition="$vo2['id'] eq $community_catid"> style="background:#EEE;"</if>>{ZF:$vo2.name}</a>
+											<a href="{ZF::U('Wap/Index/goods',array('token'=>$token,'catid'=>$vo2['id'],'wecha_id'=>$wecha_id))}" class="inline_item"<if condition="$vo2['id'] eq $community_catid"> style="background:#EEE;"</if>>{ZF:$vo2.name}</a>
 										</volist>
 										</div>
 									<else/>
-										<a href="{ZF::U('Wap/Index/goods',array('token'=>$token,'catid'=>$vo['id'],'brand_id'=>$brand_id,'wecha_id'=>$wecha_id))}" class="inline_item"<if condition="$vo['id'] eq $community_catid"> style="background:#EEE;"</if>>{ZF:$vo.name}</a>
+										<a href="{ZF::U('Wap/Index/goods',array('token'=>$token,'catid'=>$vo['id'],'wecha_id'=>$wecha_id))}" class="inline_item"<if condition="$vo['id'] eq $community_catid"> style="background:#EEE;"</if>>{ZF:$vo.name}</a>
 									</if>
 								</volist>
 							</div>
