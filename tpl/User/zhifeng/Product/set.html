@@ -57,6 +57,7 @@ afterBlur: function(){this.sync();}
         <th><span class="red">*</span>品牌：</th> 
         <td>
                <select name="brand" id="select_brand">
+               		<option value="">请选择品牌</option>
                    <volist name="brands" id="vo">
                      <option value="{ZF:$vo.id}"<php> if ($set['brand'] == $vo['id']) echo ' selected="selected"';</php>>{ZF:$vo.name}</option>
                    </volist>
@@ -91,6 +92,7 @@ afterBlur: function(){this.sync();}
         <th><span class="red">*</span>社区类目：</th> 
         <td>
                <select name="community_catid" id="community_catid">
+               		<option value="">请选择社区类目</option>
                    <volist name="wz_cates" id="vo">
                      <option value="{ZF:$vo.id},{ZF:$vo.name}"<php> if ($set['community_catid'] == $vo['id']) echo ' selected="selected"';</php>>{ZF:$vo.name}</option>
                    </volist>

@@ -82,7 +82,9 @@ $(document).ready(function($){
 				<div class="attr_name"><span class="import_icon">*</span>社区类目：</div>
 				 <div class="attr_data">
 					<select name="community_catid" id="community_catid" class="selectoptions">
+						<option value="">请选择社区类目</option>
 						    <volist name="wz_cates" id="vo">
+						      
 						      <option value="{ZF:$vo.id},{ZF:$vo.name}"<php> if ($set['community_catid'] == $vo['id']) echo ' selected="selected"';</php>>{ZF:$vo.name}</option>
 						    </volist>
 					</select>
