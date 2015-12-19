@@ -383,5 +383,53 @@ class BaseAction extends Action
 			
 		}
 	}
+	
+	/**
+	 * 或取一个社区下的所有店铺，包括社区号和商家号下的店铺
+	 * @param String $token 社区的任意一个店铺的token
+	 * @param Array $tokens 引用传值，会填充上所有店铺的token索引数组
+	 * @return Ambigous <NULL, mixed> 当前社区下所有店铺的元数据
+	 */
+	protected function getCommunityTokens($token, &$tokens) {
+	    
+	    $tokens = array();
+	    $wxusers = null;
+	    
+	    $uid = M('Wxuser')->where(array('token'=>$token))->getField('uid');
+	    
+	    if (!empty($uid)) {
+	        
+	        // 获取帐号所选择的社区 community_id
+	        $community_id = M('Users')->where(array('id'=>$uid))->getField('community_id');
+	        
+	        if (!empty($community_id)) {
+	            // 查找该社区下的所有帐号的uid
+	            $community_uids = M('Users')->where(array('community_id'=>$community_id))->field(array('id'))->select();
+	            
+	            $community_uids_array = array();
+	            foreach ($community_uids as $community_uids_row){
+	                array_push($community_uids_array, $community_uids_row['id']);
+	            }
+	            
+	            if (!empty($community_uids_array)){
+	                // 查找这些帐号下的所有店铺
+	                $community_wxusers = M('Wxuser')->where(array('uid'=>array('in',$community_uids_array)))->select();
+	                
+	                if (!empty($community_wxusers)){
+	                    
+	                    $wxusers = $community_wxusers;
+	                    
+	                    foreach ($community_wxusers as $community_wxusers_row){
+	                        array_push($tokens, $community_wxusers_row['token']);
+	                    }
+	                }
+	            }
+	        }
+	        
+	    }
+	    
+	    return $wxusers;
+	    
+	}
 }
 ?>

@@ -202,16 +202,22 @@ if (!empty($people)) {
 	</div>
 	-->
 </div>
+
+<!-- 退出登录 -->
 <div class="container">
 	<div class="col-xs-12" style="background:#f95a60;width:100%;border:0;box-shadow:0px 1px 1px 0px;font-size:20px;height:40px;border-radius:4px;text-align: center;line-height: 40px;margin-top:20px;">
 		<a href="<empty name='Think.get.re'>{ZF::U('logout',array('token'=>$_GET['token']))}<else/>{ZF::U('logout',array('token'=>$_GET['token'],'re'=>urlencode($_GET['re'])))}</empty>" style="color:white;" >退出登录</a>
 	</div>
 </div>
+
+
 <php>
 }
 </php>
 
 
+
+<!-- 列出当前社区下的所有店铺 -->
 
 
 <!-- <div style="height:60px;"></div>
