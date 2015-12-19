@@ -150,6 +150,47 @@ class IndexAction extends WapAction{
 			$where['name'] = array('like','%'.$keyword.'%');
 		}
 		
+		// 只找出当前社区的商品
+		$community_token = $this->_get('token');
+		$community_uid = M('Wxuser')->where(array('token'=>$community_token))->getField('uid');
+		$merchant_tokens = '';
+		
+		if (!empty($community_uid)){
+		    
+		    // 读取社区id
+		    $community_id = M('Users')->where(array('id'=>$community_uid))->getField('community_id');
+		    
+		    // 存在社区号，查找该社区号下的所有帐号的uid
+		    $merchant_uids_rs_m = M('Users');
+		    $merchant_uids_rs = $merchant_uids_rs_m->where(array('community_id'=>$community_id))->field(array('id'))->select();
+		    
+		    // 查找所有帐号下的店铺token
+		    $merchant_uids = '';
+		    foreach ($merchant_uids_rs as $merchant_uid_rs){
+		        if ($merchant_uids!=='') $merchant_uids .= ',';
+		        $merchant_uids .= $merchant_uid_rs['id'];
+		    }
+		    
+		    $merchant_tokens_rs_m = M('Wxuser');
+		    $merchant_tokens_rs = $merchant_tokens_rs_m->where('`uid` in ('.$merchant_uids.')')->field(array('token'))->select();
+		    
+		    if (!empty($merchant_tokens_rs)){
+		        
+		        foreach ($merchant_tokens_rs as $merchant_token_rs){
+		            if ($merchant_tokens!=='') $merchant_tokens .= ',';
+		            $merchant_tokens .= $merchant_token_rs['token'];
+		        }
+		    }
+		    
+		    
+		    
+		}
+		
+		$where['token'] = array(
+		    'in',$merchant_tokens
+		);
+		
+		
 		$page_size = 10;
 		$current_page = 1;
 		
@@ -159,9 +200,12 @@ class IndexAction extends WapAction{
 		
 		$limt_offset = ($current_page*$page_size)-$page_size;
 		
-		$goods = M('Product')->where($where)->limit($limt_offset,$page_size)->select();
+		$goods_m = M('Product');
+		
+		$goods = $goods_m->where($where)->limit($limt_offset,$page_size)->select();  $this->assign('sql',$goods_m->getLastSql());
 		$goods_count = M('Product')->where($where)->field('count(*)')->getField('count(*)');
-
+		
+		
 		
 		$info = $this->getClassfy();
 		

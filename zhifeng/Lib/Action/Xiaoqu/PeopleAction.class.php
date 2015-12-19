@@ -90,7 +90,7 @@ class PeopleAction extends XiaoquAction {
 	public function home() {
 		
 		
-		if (!$this->is_logined()) $this->error('您还没有登录！',U('login',array('token'=>$_GET['token'],'re'=>urlencode($_GET['re']))));
+		//if (!$this->is_logined()) $this->error('您还没有登录！',U('login',array('token'=>$_GET['token'],'re'=>urlencode($_GET['re']))));
 		$this->display();
 	}
 	
