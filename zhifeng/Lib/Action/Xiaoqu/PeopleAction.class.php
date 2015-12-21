@@ -89,9 +89,14 @@ class PeopleAction extends XiaoquAction {
 	
 	public function home() {
 		
-	    // 当前社区的community_id
+	    $wxusers = $this->getCommunityTokens($_GET['token']);
 	    
+	    $this->assign('community_shops',$wxusers);
+	    
+	    $district_communitysites = $this->getCommunitysitesOfDistrictByToken($_GET['token']);
 		
+	    $this->assign('district_communitysites',$district_communitysites);
+	    
 		// if (!$this->is_logined()) $this->error('您还没有登录！',U('login',array('token'=>$_GET['token'],'re'=>urlencode($_GET['re']))));
 		$this->display();
 	}
