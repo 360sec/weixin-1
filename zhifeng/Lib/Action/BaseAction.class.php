@@ -545,12 +545,12 @@ class BaseAction extends Action
 	            return true;
 	        }else{
 	            
-	            // 排序，取第一个
+	            // 排序，取第一个 
 	            usort($sites, function ($a, $b) {
 	                if (intval($a['createtime']) > intval($b['createtime'])) {
-	                    return -1;
-	                } elseif (intval($a['createtime']) < intval($b['createtime'])) {
 	                    return 1;
+	                } elseif (intval($a['createtime']) < intval($b['createtime'])) {
+	                    return -1;
 	                } else {
 	                    return 0;
 	                }
