@@ -88,7 +88,7 @@ l.get(function(rs){
     var map = new BMap.Map("bdmap_stage");
     var point = new BMap.Point(rs.center.lng, rs.center.lat);
     
-    
+    console.log(map.getDistance);
     
     var showError = function(msg){
     	console.log(msg);
@@ -177,16 +177,20 @@ l.get(function(rs){
     	
     }
     
-var do_close_map = function(){
-    	
-    	$(this).hide("fast");
-    	$('#city_lable_btn').show('fast');
-    	// 窗口打开完成，再设置f地图视线中心
-    	
-    	map.clearOverlays();
-    	$('#bdmap').hide("slow");
-    	
+	var do_close_map = function(){
+	    	
+	    	$(this).hide("fast");
+	    	$('#city_lable_btn').show('fast');
+	    	// 窗口打开完成，再设置f地图视线中心
+	    	
+	    	map.clearOverlays();
+	    	$('#bdmap').hide("slow");
+	    	
     }
+	
+	var getCompanys = function(){
+		
+	}
     
     $('#city_lable_btn').click(do_geolocation);
     $('#city_lable_close_btn').click(do_close_map);
