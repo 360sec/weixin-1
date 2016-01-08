@@ -74,7 +74,9 @@ $people = session('people');
 
 <div id="bdmap" style="display:none;">
 	<div id="bdmap_msg" style="text-align: center; background-color:#333; color: #fff;font-size: 12px;">正在计算您的精确位置。。。</div>
-	<div id="bdmap_stage" style="border-radius:0 0 30px 30px; -webkit-border-radius:0 0 30px 30px; overflow: hidden;height:260px;"></div>
+	<div id="bdmap_stage" style="border-radius:0 0 30px 30px; -webkit-border-radius:0 0 30px 30px; overflow: hidden;height:300px;"></div>
+    <div id="bdmap_msg_finding" style="display:none;text-align: center; background-color:#333; color: #fff;font-size: 12px;">正在查找周边服务。。。</div>
+    <div id="bdmap_companys"></div>
 </div>
 
 <script type="text/javascript">
@@ -87,8 +89,8 @@ l.get(function(rs){
     
     var map = new BMap.Map("bdmap_stage");
     var point = new BMap.Point(rs.center.lng, rs.center.lat);
+    var real_point_baidu = null;
     
-    console.log(map.getDistance);
     
     var showError = function(msg){
     	console.log(msg);
@@ -125,6 +127,16 @@ l.get(function(rs){
         
     }
     
+    
+var setmaker_company = function (makepoint,msg){
+    	
+    	var marker = new BMap.Marker(makepoint);
+        map.addOverlay(marker);
+        var label = new BMap.Label(msg,{offset:new BMap.Size(20,-10)});
+        marker.setLabel(label); //添加百度label
+        
+    }
+    
 
     var locationSuccess = function(position){
     	
@@ -139,8 +151,10 @@ l.get(function(rs){
         
         convertor.translate(pointArr, 1, 5, function(data){
         	if(data.status === 0) {
+        		real_point_baidu = data.points[0];
         		setmaker(data.points[0],'您的位置！');
-        		$('#bdmap_msg').hide("slow");
+        		$('#bdmap_msg').hide("slow",getCompanys);
+        		
               }
         });
     };
@@ -185,10 +199,79 @@ l.get(function(rs){
 	    	
 	    	map.clearOverlays();
 	    	$('#bdmap').hide("slow");
+	    	$('#bdmap_companys').empty();
 	    	
     }
 	
 	var getCompanys = function(){
+		
+		var ajax_do = function(){
+			
+			$.ajax(location.href,{
+				type: "POST",
+				dataType:"json",
+				success: function(data){
+					$('#bdmap_companys').html('<p style="padding:15px;"></p>');
+					
+					
+					// 按距离排序
+					var companys =  new Array();
+					$.each(data,function(i,node){
+						var company_point = new BMap.Point(node.longitude, node.latitude);
+						var distance = parseInt(map.getDistance(company_point,real_point_baidu));
+						var temp_node = node;
+						temp_node.distance = distance;
+						companys.push(temp_node);
+						
+						console.log(temp_node.distance);
+					});
+					
+					companys.sort(function(a,b){
+						return (a.distance-b.distance);
+					});
+
+					$.each(companys,function(i,node){
+						
+						if (i > 19) return true;
+						
+						var distance = null;
+						var distance_unit = '米';
+						if (node.distance < 1000) {
+							distance = node.distance;
+						} else {
+							
+							//保留两位小数  
+						    //功能：将浮点数四舍五入，取小数点后2位 
+						    var toDecimal = function (x) { 
+						      var f = parseFloat(x); 
+						      if (isNaN(f)) { 
+						        return; 
+						      } 
+						      f = Math.round(x*100)/100; 
+						      return f; 
+						    }
+							
+							distance = toDecimal(node.distance/1000);
+							distance_unit = '公里';
+						}
+						$('#bdmap_companys p').append('<h6>[ '+distance+' '+distance_unit+' ] '+node.name+'</h6>');
+						var company_point = new BMap.Point(node.longitude, node.latitude);
+						if (i < 10) {
+							setmaker_company(company_point,(i+1)+'.'+node.name,function(){
+								// 点击处理
+							});
+						}
+						
+						
+					});
+				}
+			});
+			
+		};
+		
+		$('#bdmap_msg_finding').show('fast',ajax_do);
+		$('#bdmap_msg_finding').hide('fast');
+		
 		
 	}
     
