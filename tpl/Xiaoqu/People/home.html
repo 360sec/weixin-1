@@ -1,4 +1,4 @@
-<php>$PageTitle = '这里是个人中心';
+<php>$PageTitle = '个人中心';
 $HeadScript = '
 <link rel="stylesheet" href="http://cdn.amazeui.org/amazeui/2.5.0/css/amazeui.min.css">
 <script type="text/javascript" src="http://cdn.amazeui.org/amazeui/2.5.0/js/amazeui.min.js"></script>
@@ -254,7 +254,19 @@ var setmaker_company = function (makepoint,msg){
 							distance = toDecimal(node.distance/1000);
 							distance_unit = '公里';
 						}
-						$('#bdmap_companys p').append('<h6>[ '+distance+' '+distance_unit+' ] '+node.name+'</h6>');
+						$('#bdmap_companys p').append('\
+							<div style="overflow:hidden; padding:10px 0; border-bottom:1px dashed #eee;">\
+								<div style="float:left; width:20%; background:#eee;">\
+									<div style=" padding-bottom:100%; background-image:url('+node.logourl+'); background-size:cover;background-position: center top;background-repeat: no-repeat; overflow: hidden;"></div>\
+								</div>\
+								<div style="float:left; width:80%; padding:0 0 0 10px;font-size:12px;">\
+									<div style=" font-weight:bold;"><a href="/index.php?g=Wap&m=Index&a=index&token='+node.token+'">'+(i+1)+'. '+node.name+'</a></div>\
+									<div>距离：'+distance+' '+distance_unit+'</div>\
+									<div>电话：'+node.tel+' / '+node.mp+'</div>\
+									<div>地址：'+node.address+'</div>\
+								</div>\
+							</div>\
+						');
 						var company_point = new BMap.Point(node.longitude, node.latitude);
 						if (i < 10) {
 							setmaker_company(company_point,(i+1)+'.'+node.name,function(){
