@@ -49,94 +49,43 @@
 	        }
 		</script>
 	</head>
-	<body onselectstart="return true;" ondragstart="return false;" class="discuss_index">
-		<div id="container" class="container" <if condition="$bgurl neq NULL">style="background:url('{ZF:$bgurl}') repeat-y center 0"</if>>
+	<body onselectstart="return true;" ondragstart="return false;" class="discuss_index" style="background-color:#FFF;">
+		<div id="container" class="container" style="background:url()">
 			
 			<header>
-				<div class="header_1">
-					<ul class="tbox" >
-						<li>
-							<span class="head_img">
-								<img src="{ZF:$config.logo}" onerror="this.src='{ZF::RES}/images/forum/face.png';" />
-							</span>
-						</li>
-						<li>
-							<h5>{ZF:$config.forumname}</h5>
-							<p>
-								<a href="javascript:;" class="label"><span class="icons icons_post">&nbsp;</span>{ZF:$count}帖子</a>
-								<a href="javascript:;" class="label"><span class="icons icons_visisted">&nbsp;</span>{ZF:$config.pv}访问</a>
-							</p>
-						</li>
-					</ul>
+				<div class="header_1" style="background:#CC0000; color:#FFF; height:auto;">
+
+					<p style=" font-size:12pt; font-weight:bold; line-height:50pt; text-align:center;">{ZF:$config.forumname}</p>
+					<p style="display:none;">
+						<a href="javascript:;" class="label"><span class="icons icons_post">&nbsp;</span>{ZF:$count}帖子</a>
+						<a href="javascript:;" class="label"><span class="icons icons_visisted">&nbsp;</span>{ZF:$config.pv}访问</a>
+					</p>
+
 				</div>
-			    <include file="cats"/>
+			    <include file="cats_red"/>
 			</header>
 			
 			<div class="body">
 				<div id="list_article" class="list_article">
 					
 					<volist id="list" name="list">
-					<article><!--帖子-->
+						<article style="border-radius:0px;"><!--帖子-->
+							<a style="display: block;" href="{ZF::U('Forum/comment',array('tid'=>$list['id'],'wecha_id'=>$_GET['wecha_id'],'token'=>$_GET['token'],'catid'=>$catid))}">	
+							     <div style="overflow: hidden;">
+							     	<div style="width:100px; float: left;"><div style="padding-bottom:100%; background-color:#EEE;<if condition="$list['photoArr'] neq ''">background-image:url({ZF:$list['photoArr'][0]});background-size:cover; background-position:center center;</if>"></div></div>
+							     	<p>
+							     	    <div style="padding:0 0  0 110px;">
+							     	        <h4 style="height:30px; line-height:30px; overflow: hidden;white-space: nowrap;text-overflow: ellipsis;">{ZF:$list.title}</h4>
+							     	        <div style=" font-size:8pt;">{ZF::htmlspecialchars_decode($list['content'],ENT_QUOTES)}</div>
+							     	    </div>
+							     	</p>
+							     </div>
+					        </a>
+	  					</article>
 					
-						    <header>
-    							<ul class="tbox">
-    								<li><!--头像-->
-    									<a href="{ZF::U('Forum/otherUser',array('wecha_id'=>$_GET['wecha_id'],'uid'=>$list['uid'],'token'=>$_GET['token']))}" class="head_img">
-    										<img src="{ZF:$list.uinfo.portrait}" onerror="this.src='{ZF::STATICS}/forum/images/face.png';" />
-									    </a>
-    								</li>
-									
-    								<li><!--用户名、发布时间-->
-    									<h5>{ZF:$list.uname}</h5>
-									    <p>{ZF::date('Y-m-d H:i:s',$list['createtime'])}</p>
-    								</li>
-    							</ul>
-    						</header>
-				    		
-							<section>
-							
-								<if condition="$list['photoArr'] neq ''">
-									<figure data-count="{ZF:$list.photoArr|count}张图片">
-										<div>
-											<for start="0" end="count($list['photoArr'])">
-												<img src="{ZF:$list['photoArr'][$i]}" data-src="{ZF:$list['photoArr'][$i]}" data-gid="g7" onload="preViewImg(this, event);"/>
-											</for>
-										</div>
-									</figure>
-								</if>
-										
-								<div style="clear:both"></div>	
-								<a style="display: block;" href="{ZF::U('Forum/comment',array('tid'=>$list['id'],'wecha_id'=>$_GET['wecha_id'],'token'=>$_GET['token'],'catid'=>$catid))}">			
-	    							<div>
-	    								<h5>{ZF:$list.title}</h5><!--发帖标题-->
-									    <div style="color:#333;">{ZF::htmlspecialchars_decode($list['content'],ENT_QUOTES)}</div><!--发帖内容-->
-								    </div>
-							        <span style="color:#000;">查看全文</span>
-							    </a>
-								
-    						</section>
-							
-    						<footer>
-    						    <ul class="box">
-    								<li><!--喜欢-->
-										<a href="javascript:;" class="a_collect <php>if(in_array($wecha_id,explode(',',$list['likeid']))){echo 'on';}else{ }</php>" onclick="collectTrends({ZF:$list.id},'{ZF:$wecha_id}')" ><span class="icons icons_collect" >&nbsp;</span><label><if condition="empty($list['likeid'])">0<else />{ZF::count(explode(',',$list['likeid']))}</if></label></a>
-    								</li>
-    								<li><!--评论-->
-    									<a href="{ZF::U('Forum/comment',array('tid'=>$list['id'],'wecha_id'=>$_GET['wecha_id'],'token'=>$_GET['token']))}" class="a_comment"><span class="icons icons_comment" >&nbsp;</span><label>{ZF:$list.cnum}</label></a>
-    								</li>
-    								<li><!--赞-->
-    								    <a href="javascript:;" class="a_like <php>if(in_array($wecha_id,explode(',',$list['favourid']))){echo 'on';}else{ }</php>" onclick="praiseTrends({ZF:$list.id},'{ZF:$wecha_id}')"><span class="icons icons_like">&nbsp;</span><label><if condition="empty($list['favourid'])">0<else />{ZF::count(explode(',',$list['favourid']))}</if></label></a>
-    								</li>
-							    </ul>
-						     </footer>
-							 
-    					</article>
-						
-						</volist>
-						
-
-						
-						</div>
+					</volist>
+					
+				</div>
 			</div>
 			<include file="footermenu"/>
 		</div>

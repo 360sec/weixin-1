@@ -121,7 +121,12 @@ class ForumAction extends WapAction{
 		$this->assign('list',$list);
 		
 		$this->assign('wecha_id',$wecha_id);
-		$this->display();
+		
+		// 默认模板
+		//$this->display();
+		
+		// 红色门户式模板
+		$this->display('index_red');
 
 	
 	}
@@ -423,12 +428,20 @@ class ForumAction extends WapAction{
 				
 			}
 		}
+		
+		
+		$config = M('Forum_config')->where("token = '$token'")->find();
+		$this->assign('config',$config);
 
 		$this->assign('wecha_id',$wecha_id);
 		$this->assign('cnum',$cnum);
 		$this->assign('comment',$comment);
 		$this->assign('topics',$topics);
-		$this->display();
+		// 默认模板
+		//$this->display();
+		
+		// 红色门户式模板
+		$this->display('comment_red');
 	
 	}
 
