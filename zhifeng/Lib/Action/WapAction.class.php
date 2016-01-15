@@ -56,7 +56,7 @@ class WapAction extends BaseAction{
             //echo '正在组装wecha_id';
 			// 如果已经登录了，就直接生成wecha_id
 			if (!empty($people)){
-				$this->wecha_id = 'phone-'.md5($people['phone']);
+				$this->wecha_id = 'phone-'.$people['phone'];
 				if (empty($_GET['wecha_id'])){
 					$re_url = str_replace('&wecha_id=', '&wecha_id='.$this->wecha_id, $_SERVER['REQUEST_URI'],$replace_count);
 					if ($replace_count < 1){
