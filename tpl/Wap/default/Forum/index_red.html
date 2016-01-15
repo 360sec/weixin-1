@@ -76,7 +76,7 @@
 							     	<p>
 							     	    <div style="padding:0 0  0 110px;">
 							     	        <h4 style="height:30px; line-height:30px; overflow: hidden;white-space: nowrap;text-overflow: ellipsis;">{ZF:$list.title}</h4>
-							     	        <div style=" font-size:8pt;">{ZF::htmlspecialchars_decode($list['content'],ENT_QUOTES)}</div>
+							     	        <div style=" font-size:8pt; height:70px; overflow: hidden;">{ZF::htmlspecialchars_decode(mb_substr($list['content'],0,60),ENT_QUOTES)}...</div>
 							     	    </div>
 							     	</p>
 							     </div>
