@@ -7,3 +7,6 @@ RewriteEngine On
 
 ##Wxpay
 RewriteRule ^wxpay/(warning|payfeedback|getpackage|pay)$ index\.php\?g=Wap&m=Wxpay&a=$1 [L]
+
+##QQ Login
+RewriteRule ^qqloginredirect(.*)$ index\.php\?g=Xiaoqu&m=People&a=qqloginredirect&%{QUERY_STRING} [L]

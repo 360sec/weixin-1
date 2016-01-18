@@ -1,4 +1,6 @@
-<php>$PageTitle = '登录';</php>
+<php>$PageTitle = '登录';
+$HeadScript = '';
+</php>
 <include file="Public:header"/>
 <div class="container"  id="page_name" style="padding:0;">
 	<span class="col-xs-3 back"><a href="" onclick="window.history.back()"><span class="glyphicon glyphicon-menu-left"></span></a></span>
@@ -25,8 +27,21 @@
 	</div>
 </form>
 
-<div class="col-xs-12" style="margin-top:20px;color:black;text-align:center;font-size:18px;"><a href="{ZF::U('Home/Index/mlogin')}" style="padding-right:10px;">商家登录</a></div>
-
+<div class="col-xs-12" style="margin-top:20px;color:black;text-align:center;font-size:18px;">
+<a href="#" id="qqlogin"><img src="http://qzonestyle.gtimg.cn/qzone/vas/opensns/res/img/Connect_logo_4.png"></a> | 
+<a href="{ZF::U('Home/Index/mlogin')}" style="padding-right:10px;">商家登录</a>
+</div>
+<script>
+$('#qqlogin').click(function(){
+	var login_func = function ()
+	 {
+		   //以下为按钮点击事件的逻辑。注意这里要重新打开窗口
+		   //否则后面跳转到QQ登录，授权页面时会直接缩小当前浏览器的窗口，而不是打开新窗口
+		   location.href="{ZF::U('Xiaoqu/People/qqlogin')}";
+		 };
+	login_func();
+});
+</script>
 <div class="col-xs-12" style="position:fixed;margin-top:150px;padding:10px 0 10px 0 ;color:black;text-align:center;font-size:14px;z-index: -10">
 	<a href="{ZF::U('Wap/Index/index',array('token'=>$_GET['token']))}" style="padding-right:10px;">返回微站</a>|
 	<a href="{ZF::U('Wap/Product/cats',array('token'=>$_GET['token']))}" style="padding-left:10px;">返回微商城</a>

@@ -20,20 +20,61 @@ class PeopleAction extends XiaoquAction {
 				
 			}else{
 			
-				$db = D('People');
-				if ($rs = $db->create()){
-					if ($id = $db->add()){
-						//自动登录
-						//$error = $error.''.$id;
-						// 发送帐号信息到手机短信
-						$this->sendSMS(array($_POST['phone']),'您刚刚完成了注册，你的登录密码是'.$_POST['password'].'，请妥善保管。', $err);
-						$this->login($id);
-					}else{
-						$error = $db->getDbError();
-					}
-				}else{
-					$error = $db->getError();
-				}
+			    //如果是QQ登录注册，则提前生成随机密码
+			    $QQConn = session('qqconn');
+			    $msg = '';
+			    if (!empty($QQConn)) {
+			        $_POST['password'] = 'pass'.time();
+			        $_POST['password_c'] = $_POST['password']; 
+			    }
+			    
+			    // 检查是否已存在些手机帐户，是则直接绑定
+			    $user_id = M('people')->where(array('phone'=>$_POST['phone']))->getField('id');
+			    if (!empty($user_id)) {
+			        
+			         if ($this->bindQQ($user_id, $QQConn['openid'])) {
+			             $this->sendSMS(array($_POST['phone']),'您刚刚完成了QQ帐号('.$QQConn['info']->nickname.')与手机的绑定操作，您以后可以直接使用此QQ帐户来登录了。');
+			         }else{
+			             exit('绑定出错');
+			         }
+			         
+			         $this->login($user_id);
+			         
+			    } else {
+			        
+			        // 不存在，全完注册手机帐户
+			        $db = D('People');
+			        if ($rs = $db->create()){
+			            if ($id = $db->add()){
+			                
+			                
+			                $bind_msg = '';
+			                if (!empty($QQConn)) {
+			                    
+			                    if ($this->bindQQ($id, $QQConn['openid'])) {
+			                        $bind_msg = 'QQ帐号('.$QQConn['info']->nickname.')已经与您的手机帐户绑定，您以后也可以直接使用此QQ帐户来登录。';
+			                    }else{
+			                        exit('绑定出错');
+			                    }
+			                    
+			                }
+			                
+			                $this->sendSMS(array($_POST['phone']),'您刚刚完成了注册，你的登录密码是'.$_POST['password'].'，请妥善保管。'.$bind_msg, $err);
+			                
+			                $this->login($id);
+			                
+			            }else{
+			                $error = $db->getDbError();
+			            }
+			        }else{
+			            $error = $db->getError();
+			        }
+			        
+			        
+			        
+			    }
+			    
+				
 			
 			}
 		}
@@ -41,6 +82,17 @@ class PeopleAction extends XiaoquAction {
 		$this->assign('error',$error);
 		
 		$this->display();
+	}
+	
+	private function bindQQ($user_id,$openid)
+	{
+	    // 绑定QQ帐号
+	    $Set_rs = M('people')->where(array('id'=>$user_id))->setField('openid_qc',$openid);
+	    if ($Set_rs) {
+	        return true;
+	    }else{
+	        return false;
+	    }
 	}
 
 	/**
@@ -116,6 +168,7 @@ class PeopleAction extends XiaoquAction {
 	
 	public function logout(){
 		$this->setPeopleSession();
+		$this->clearQQSession();
 		$this->display();
 	}
 	
@@ -285,6 +338,13 @@ class PeopleAction extends XiaoquAction {
 		session('people',$people);
 	}
 	
+	public function clearQQSession(){
+	    $QQConn = session('qqconn');
+	    if (!empty($QQConn)) {
+	        session('qqconn',null);
+	    }
+	}
+	
 	private function refreshPeopleSession(){
 		$people = session('people');
 		$new_people = D('People')->where(array('id'=>$people['id']))->find();
@@ -298,5 +358,121 @@ class PeopleAction extends XiaoquAction {
 		$s = session('people');
 		if (empty($s))  return false;
 		else return true;
+	}
+	
+	public function qqlogin() 
+	{
+	    $authorize_url = 'https://graph.qq.com/oauth2.0/authorize?response_type=code&client_id=101282915&redirect_uri='.urlencode('http://www.malruco.cn/qqloginredirect').'&state=hahagogo';
+	    
+	    header('Location: '.$authorize_url);
+	}
+	
+	Public function qqloginredirect() 
+	{
+	    if (!empty($_GET['code'])) {
+	        
+	        $AuthorizationCode = $_GET['code'];
+	        
+	        $AccessToken_url = 'https://graph.qq.com/oauth2.0/token'.
+	            '?grant_type=authorization_code'.
+	            '&client_id=101282915'.
+	            '&client_secret=958939f3ec471c72bfabb64f1a19c609'.
+	            '&code='.$AuthorizationCode.
+	            '&redirect_uri='.urlencode('http://www.malruco.cn/qqloginredirect');
+	        
+	        $AccessToken_rs = $this->curl($AccessToken_url);
+	        
+	        $pattern = '/^'.preg_quote('access_token=').'(.+?)'.preg_quote('&').'/i';
+	        $reg_rs = preg_match($pattern, $AccessToken_rs, $matches);
+	        
+	        $AccessToken = null;
+	        if ($reg_rs){
+	            $AccessToken = $matches[1];
+	        }else{
+	            exit('无法取得$AccessToken');
+	        }
+	        
+	        $OpenID_url = 'https://graph.qq.com/oauth2.0/me?access_token='.$AccessToken;
+	        
+	        $OpenID_url_rs = $this->curl($OpenID_url);
+	        
+	        eval (str_replace(')','\')',str_replace('callback(','$js_data = json_decode(\'',$OpenID_url_rs)));
+	        
+	        $OpenID = null;
+	        $UserInfo = null;
+	        if (!empty($js_data)){
+	            
+	            $OpenID = $js_data->openid;
+	            
+	            // 获取用户信息
+	            $get_user_info_url = 'https://graph.qq.com/user/get_user_info'.
+	            '?access_token='.$AccessToken.
+	            '&oauth_consumer_key=101282915'.
+	            '&openid='.$OpenID;
+	            
+	            $get_user_info_rs = $this->curl($get_user_info_url);
+	            
+	            if (!empty($get_user_info_rs)) {
+	                $UserInfo = json_decode($get_user_info_rs);
+	            }else{
+	                exit('无法取得QQ用户信息');
+	            }
+	            
+	            
+	            // 保存到session备用
+	            session('qqconn',array(
+	                'openid'=>$OpenID,
+	                'info'=>$UserInfo,
+	            ));
+	            
+	        } else {
+	            exit('无法取得openid');
+	        }
+	        
+	        // 查找peopel数据表，得到people_id
+	        $people_id = M('people')->where("openid_qc='$OpenID'")->getField('id');
+	        
+	        if ($people_id){
+	            
+	            $this->login($people_id,false);
+	            header('Location: /index.php?g=Xiaoqu&m=People&a=home');
+	        }else{
+	            
+	            // 没有注册手机，进入注册流程
+	            header('Location: /index.php?g=Xiaoqu&m=People&a=register');
+	            
+	        }
+	        
+	    }
+	    
+	    
+	    
+	}
+	
+	private function curl($url){
+	    // 创建一个cURL资源
+	    $ch = curl_init($url);
+	    
+	    // 设置URL和相应的选项
+	    curl_setopt($ch, CURLOPT_HEADER, 0);
+	    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+	    
+	    // 抓取URL并把它传递给浏览器
+	    $rs = curl_exec($ch);
+	    
+	    if ($rs === false){
+	        if($errno = curl_errno($ch)) {
+	            $error_message = curl_strerror($errno);
+	            echo "cURL error ({$errno}):\n {$error_message}";
+	        }
+	    }else{
+	        //echo '正常';
+	    }
+	    
+	    // 关闭cURL资源，并且释放系统资源
+	    curl_close($ch);
+	    
+	    return $rs;
+	    
 	}
 }
