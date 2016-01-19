@@ -21,9 +21,9 @@ class PeopleAction extends XiaoquAction {
 			}else{
 			
 			    //如果是QQ登录注册，则提前生成随机密码
-			    $QQConn = session('qqconn');
+			    $TPAuth = session('TPAuth');
 			    $msg = '';
-			    if (!empty($QQConn)) {
+			    if (!empty($TPAuth)) {
 			        $_POST['password'] = 'pass'.time();
 			        $_POST['password_c'] = $_POST['password']; 
 			    }
@@ -32,8 +32,15 @@ class PeopleAction extends XiaoquAction {
 			    $user_id = M('people')->where(array('phone'=>$_POST['phone']))->getField('id');
 			    if (!empty($user_id)) {
 			        
-			         if ($this->bindQQ($user_id, $QQConn['openid'])) {
-			             $this->sendSMS(array($_POST['phone']),'您刚刚完成了QQ帐号('.$QQConn['info']->nickname.')与手机的绑定操作，您以后可以直接使用此QQ帐户来登录了。');
+			         if ($this->bindTPAuth($TPAuth['vendor'],$user_id, $TPAuth['openid'])) {
+			             
+			             $TPAuth_msg = null;
+			             
+			             if ($TPAuth['vendor'] == 'qq') $TPAuth_msg = 'QQ帐号('.$TPAuth['info']->nickname.')';
+			             elseif ($TPAuth['vendor'] == 'weibo') $TPAuth_msg = '微博帐号('.$TPAuth['info']->nickname.')';
+			             
+			             $this->sendSMS(array($_POST['phone']),'您刚刚完成了'.$TPAuth_msg.'与手机的绑定操作，您以后可以直接使用此帐户来登录了。');
+			             
 			         }else{
 			             exit('绑定出错');
 			         }
@@ -49,10 +56,17 @@ class PeopleAction extends XiaoquAction {
 			                
 			                
 			                $bind_msg = '';
-			                if (!empty($QQConn)) {
+			                if (!empty($TPAuth)) {
 			                    
-			                    if ($this->bindQQ($id, $QQConn['openid'])) {
-			                        $bind_msg = 'QQ帐号('.$QQConn['info']->nickname.')已经与您的手机帐户绑定，您以后也可以直接使用此QQ帐户来登录。';
+			                    if ($this->bindTPAuth($TPAuth['vendor'],$id, $TPAuth['openid'])) {
+			                        
+			                        $TPAuth_msg = null;
+			                        
+			                        if ($TPAuth['vendor'] == 'qq') $TPAuth_msg = 'QQ帐号('.$TPAuth['info']->nickname.')';
+			                        elseif ($TPAuth['vendor'] == 'weibo') $TPAuth_msg = '微博帐号('.$TPAuth['info']->nickname.')';
+			                        
+			                        $bind_msg = $TPAuth_msg.'已经与您的手机帐户绑定，您以后也可以直接使用此QQ帐户来登录。';
+			                        
 			                    }else{
 			                        exit('绑定出错');
 			                    }
@@ -84,10 +98,14 @@ class PeopleAction extends XiaoquAction {
 		$this->display();
 	}
 	
-	private function bindQQ($user_id,$openid)
+	private function bindTPAuth($vendor,$user_id,$openid)
 	{
+	    $c_name = 'openid_';
+	    if ($vendor == 'qq') $c_name .= 'qc';
+	    if ($vendor == 'weibo') $c_name .= 'wb';
+	    
 	    // 绑定QQ帐号
-	    $Set_rs = M('people')->where(array('id'=>$user_id))->setField('openid_qc',$openid);
+	    $Set_rs = M('people')->where(array('id'=>$user_id))->setField($c_name,$openid);
 	    if ($Set_rs) {
 	        return true;
 	    }else{
@@ -168,7 +186,7 @@ class PeopleAction extends XiaoquAction {
 	
 	public function logout(){
 		$this->setPeopleSession();
-		$this->clearQQSession();
+		$this->clearTPAuthSession();
 		$this->display();
 	}
 	
@@ -338,10 +356,10 @@ class PeopleAction extends XiaoquAction {
 		session('people',$people);
 	}
 	
-	public function clearQQSession(){
-	    $QQConn = session('qqconn');
-	    if (!empty($QQConn)) {
-	        session('qqconn',null);
+	public function clearTPAuthSession(){
+	    $TPAuth = session('TPAuth');
+	    if (!empty($TPAuth)) {
+	        session('TPAuth',null);
 	    }
 	}
 	
@@ -420,7 +438,8 @@ class PeopleAction extends XiaoquAction {
 	            
 	            
 	            // 保存到session备用
-	            session('qqconn',array(
+	            session('TPAuth',array(
+	                'vendor'=>'qq',
 	                'openid'=>$OpenID,
 	                'info'=>$UserInfo,
 	            ));
@@ -449,13 +468,104 @@ class PeopleAction extends XiaoquAction {
 	    
 	}
 	
-	private function curl($url){
+	public function wblogin()
+	{
+	    $authorize_url = 'https://api.weibo.com/oauth2/authorize?client_id=695034010&response_type=code&redirect_uri='.urlencode('http://www.malruco.cn/wbloginredirect');
+	     
+	    header('Location: '.$authorize_url);
+	}
+	
+	Public function wbloginredirect()
+	{
+	    if (!empty($_GET['code'])) {
+	         
+	        $AuthorizationCode = $_GET['code'];
+	         'https://api.weibo.com/oauth2/access_token?client_id=YOUR_CLIENT_ID&client_secret=YOUR_CLIENT_SECRET&grant_type=authorization_code&redirect_uri=YOUR_REGISTERED_REDIRECT_URI&code=CODE';
+	        $AccessToken_url = 'https://api.weibo.com/oauth2/access_token'.
+	            '?client_id=695034010'.
+	            '&client_secret=0fa6190fddd99593ebd7beb738d00e5f'.
+	            '&grant_type=authorization_code'.
+	            '&redirect_uri='.urlencode('http://www.malruco.cn/wbloginredirect').
+	            '&code='.$AuthorizationCode;
+	         
+	        $AccessToken_rs = $this->curl($AccessToken_url,'post');
+	         
+	        $AccessToken_json = json_decode($AccessToken_rs);
+	        
+	        $AccessToken = null;
+	        if ($AccessToken_rs){
+	            $AccessToken = $AccessToken_json->access_token;
+	        }else{
+	            exit('无法取得$AccessToken');
+	        }
+	         
+	        $OpenID_url = 'https://api.weibo.com/2/account/get_uid.json?source=695034010&access_token='.$AccessToken;
+	         
+	        $OpenID_url_rs = $this->curl($OpenID_url);
+	         
+	        $OpenID_url_json = json_decode($OpenID_url_rs);
+	         
+	        $OpenID = null;
+	        $UserInfo = null;
+	        if (!empty($OpenID_url_json)){
+	             
+	            $OpenID = $OpenID_url_json->uid;
+	             
+	            // 获取用户信息
+	            $get_user_info_url = 'https://api.weibo.com/2/users/show.json'.
+	                '?access_token='.$AccessToken.
+	                '&source=695034010'.
+	                '&uid='.$OpenID;
+	             
+	            $get_user_info_rs = $this->curl($get_user_info_url);
+	             
+	            if (!empty($get_user_info_rs)) {
+	                $UserInfo = json_decode($get_user_info_rs);
+	            }else{
+	                exit('无法取得QQ用户信息');
+	            }
+	             
+	             
+	            // 保存到session备用
+	            session('TPAuth',array(
+	                'vendor'=>'weibo',
+	                'openid'=>$OpenID,
+	                'info'=>$UserInfo,
+	            ));
+	             
+	        } else {
+	            exit('无法取得openid');
+	        }
+	         
+	        // 查找peopel数据表，得到people_id
+	        $people_id = M('people')->where("openid_wb='$OpenID'")->getField('id');
+	         
+	        if ($people_id){
+	             
+	            $this->login($people_id,false);
+	            header('Location: /index.php?g=Xiaoqu&m=People&a=home');
+	        }else{
+	             
+	            // 没有注册手机，进入注册流程
+	            header('Location: /index.php?g=Xiaoqu&m=People&a=register');
+	             
+	        }
+	         
+	    }
+	     
+	     
+	     
+	}
+	
+	private function curl($url,$method = 'get'){
 	    // 创建一个cURL资源
 	    $ch = curl_init($url);
 	    
 	    // 设置URL和相应的选项
 	    curl_setopt($ch, CURLOPT_HEADER, 0);
 	    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+	    
+	    if ($method == 'post') curl_setopt ( $ch, CURLOPT_POST, 1 );
 	    
 	    // 抓取URL并把它传递给浏览器
 	    $rs = curl_exec($ch);

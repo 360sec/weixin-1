@@ -47,10 +47,14 @@ $people = session('people');
     <!-- 头像 -->
 	<div class="mll-no-login"><div<php>
 	
-	$QQConn = session('qqconn');
+	$TPAuth = session('TPAuth');
 	
-    if (!empty($QQConn)) { //print_r($QQConn);
-    	echo ' style="background-image:url('.$QQConn['info']->figureurl_qq_2.'); background-size:cover;background-position: center center;"';
+    if (!empty($TPAuth)) {
+    
+    	if ($TPAuth['vendor'] == 'qq') $g_url = $TPAuth['info']->figureurl_qq_2;
+    	if ($TPAuth['vendor'] == 'weibo') $g_url = $TPAuth['info']->avatar_large;
+    	
+    	echo ' style="background-image:url('.$g_url.'); background-size:cover;background-position: center center;"';
     }
 	
 	</php>></div></div>

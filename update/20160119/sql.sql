@@ -1,0 +1,1 @@
+ALTER TABLE `zfwx_people` ADD `openid_wb` VARCHAR(50) NULL AFTER `openid_qc`;

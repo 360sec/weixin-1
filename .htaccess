@@ -10,3 +10,5 @@ RewriteRule ^wxpay/(warning|payfeedback|getpackage|pay)$ index\.php\?g=Wap&m=Wxp
 
 ##QQ Login
 RewriteRule ^qqloginredirect(.*)$ index\.php\?g=Xiaoqu&m=People&a=qqloginredirect&%{QUERY_STRING} [L]
+##Weibo Login
+RewriteRule ^wbloginredirect(.*)$ index\.php\?g=Xiaoqu&m=People&a=wbloginredirect&%{QUERY_STRING} [L]
