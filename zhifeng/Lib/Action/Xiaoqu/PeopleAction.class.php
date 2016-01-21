@@ -387,7 +387,7 @@ class PeopleAction extends XiaoquAction {
 	
 	public function qqlogin() 
 	{
-	    $authorize_url = 'https://graph.qq.com/oauth2.0/authorize?response_type=code&client_id='.self::QQ_APPKEY.'&redirect_uri='.urlencode('http://www.malruco.cn/qqloginredirect').'&state=hahagogo';
+	    $authorize_url = 'https://graph.qq.com/oauth2.0/authorize?response_type=code&client_id='.self::QQ_APPKEY.'&redirect_uri='.urlencode('http://www.abiza.cn/qqloginredirect').'&state=hahagogo';
 	    
 	    header('Location: '.$authorize_url);
 	}
@@ -403,7 +403,7 @@ class PeopleAction extends XiaoquAction {
 	            '&client_id='.self::QQ_APPKEY.
 	            '&client_secret='.self::QQ_APPSERCET.
 	            '&code='.$AuthorizationCode.
-	            '&redirect_uri='.urlencode('http://www.malruco.cn/qqloginredirect');
+	            '&redirect_uri='.urlencode('http://www.abiza.cn/qqloginredirect');
 	        
 	        $AccessToken_rs = $this->curl($AccessToken_url);
 	        
@@ -414,7 +414,7 @@ class PeopleAction extends XiaoquAction {
 	        if ($reg_rs){
 	            $AccessToken = $matches[1];
 	        }else{
-	            exit('无法取得$AccessToken');
+	            exit('无法取得$AccessToken'.$AccessToken_rs);
 	        }
 	        
 	        $OpenID_url = 'https://graph.qq.com/oauth2.0/me?access_token='.$AccessToken;
@@ -477,7 +477,7 @@ class PeopleAction extends XiaoquAction {
 	
 	public function wblogin()
 	{
-	    $authorize_url = 'https://api.weibo.com/oauth2/authorize?client_id='.self::WEIBO_APPKEY.'&response_type=code&redirect_uri='.urlencode('http://www.malruco.cn/wbloginredirect');
+	    $authorize_url = 'https://api.weibo.com/oauth2/authorize?client_id='.self::WEIBO_APPKEY.'&response_type=code&redirect_uri='.urlencode('http://www.abiza.cn/wbloginredirect');
 	     
 	    header('Location: '.$authorize_url);
 	}
@@ -489,13 +489,13 @@ class PeopleAction extends XiaoquAction {
 	        $AuthorizationCode = $_GET['code'];
 	        $AccessToken_url = 'https://api.weibo.com/oauth2/access_token'.
 	            '?client_id='.self::WEIBO_APPKEY.
-	            '&client_secret=0fa6190fddd99593ebd7beb738d00e5f'.self::WEIBO_APPSERCET.
+	            '&client_secret='.self::WEIBO_APPSERCET.
 	            '&grant_type=authorization_code'.
-	            '&redirect_uri='.urlencode('http://www.malruco.cn/wbloginredirect').
+	            '&redirect_uri='.urlencode('http://www.abiza.cn/wbloginredirect').
 	            '&code='.$AuthorizationCode;
 	         
 	        $AccessToken_rs = $this->curl($AccessToken_url,'post');
-	         
+	        //exit($AccessToken_rs);
 	        $AccessToken_json = json_decode($AccessToken_rs);
 	        
 	        $AccessToken = null;
@@ -508,7 +508,7 @@ class PeopleAction extends XiaoquAction {
 	        $OpenID_url = 'https://api.weibo.com/2/account/get_uid.json?source='.self::WEIBO_APPKEY.'&access_token='.$AccessToken;
 	         
 	        $OpenID_url_rs = $this->curl($OpenID_url);
-	         
+	        //exit($OpenID_url_rs);
 	        $OpenID_url_json = json_decode($OpenID_url_rs);
 	         
 	        $OpenID = null;

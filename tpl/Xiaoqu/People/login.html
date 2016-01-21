@@ -28,7 +28,7 @@ $HeadScript = '';
 </form>
 
 <div class="col-xs-12" style="margin-top:20px;color:black;text-align:center;font-size:18px;">
-<a href="#" id="qqlogin"><img src="http://qzonestyle.gtimg.cn/qzone/vas/opensns/res/img/Connect_logo_4.png"></a><br>
+<a href="#" id="qqlogin"><img src="http://qzonestyle.gtimg.cn/qzone/vas/opensns/res/img/Connect_logo_4.png"></a><br><br>
 <a href="#" id="wblogin"><img src="http://img.t.sinajs.cn/t4/appstyle/open/images/website/loginbtn/loginbtn_02.png"></a><br>
 <a href="{ZF::U('Home/Index/mlogin')}" style="padding-right:10px;">商家登录</a>
 </div>
@@ -38,8 +38,13 @@ $('#qqlogin').click(function(){
 	 {
 		   //以下为按钮点击事件的逻辑。注意这里要重新打开窗口
 		   //否则后面跳转到QQ登录，授权页面时会直接缩小当前浏览器的窗口，而不是打开新窗口
+		   /*
+		   var A=window.open("{ZF::U('Xiaoqu/People/qqlogin')}","TencentLogin", 
+				   "width=450,height=320,menubar=0,scrollbars=1,\
+				   resizable=1,status=1,titlebar=0,toolbar=0,location=1");*/
 		   location.href="{ZF::U('Xiaoqu/People/qqlogin')}";
-		 };
+
+	};
 	login_func();
 });
 $('#wblogin').click(function(){
