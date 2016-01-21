@@ -387,6 +387,9 @@ class PeopleAction extends XiaoquAction {
 	
 	public function qqlogin() 
 	{
+	    // 保存re token 以便授权后恢复
+	    $this->saveReNToken();
+	    
 	    $authorize_url = 'https://graph.qq.com/oauth2.0/authorize?response_type=code&client_id='.self::QQ_APPKEY.'&redirect_uri='.urlencode('http://www.abiza.cn/qqloginredirect').'&state=hahagogo';
 	    
 	    header('Location: '.$authorize_url);
@@ -461,11 +464,14 @@ class PeopleAction extends XiaoquAction {
 	        if ($people_id){
 	            
 	            $this->login($people_id,false);
-	            header('Location: /index.php?g=Xiaoqu&m=People&a=home');
+	            
+	            
+	            header('Location: '.$this->make_rd_url('home'));
+	            
 	        }else{
 	            
 	            // 没有注册手机，进入注册流程
-	            header('Location: /index.php?g=Xiaoqu&m=People&a=register');
+	            header('Location: '.$this->make_rd_url('register'));
 	            
 	        }
 	        
@@ -477,6 +483,9 @@ class PeopleAction extends XiaoquAction {
 	
 	public function wblogin()
 	{
+	    // 保存re token 以便授权后恢复
+	    $this->saveReNToken();
+	    
 	    $authorize_url = 'https://api.weibo.com/oauth2/authorize?client_id='.self::WEIBO_APPKEY.'&response_type=code&redirect_uri='.urlencode('http://www.abiza.cn/wbloginredirect');
 	     
 	    header('Location: '.$authorize_url);
@@ -549,11 +558,11 @@ class PeopleAction extends XiaoquAction {
 	        if ($people_id){
 	             
 	            $this->login($people_id,false);
-	            header('Location: /index.php?g=Xiaoqu&m=People&a=home');
+	            header('Location: '.$this->make_rd_url('home'));
 	        }else{
 	             
 	            // 没有注册手机，进入注册流程
-	            header('Location: /index.php?g=Xiaoqu&m=People&a=register');
+	            header('Location: '.$this->make_rd_url('register'));
 	             
 	        }
 	         
@@ -561,6 +570,31 @@ class PeopleAction extends XiaoquAction {
 	     
 	     
 	     
+	}
+	
+	/*
+	 * 保存re token 以便授权后恢复
+	 */
+	private function saveReNToken(){
+	    if (!empty($_GET['token'])) session('token',$_GET['token']);
+	    if (!empty($_GET['re'])) session('re',$_GET['re']);
+	    
+	    //exit('echo '.$_GET['token'].' echo '.$_GET['re']);
+	}
+	
+	/*
+	 * 授权后恢复re token 
+	 */
+	private function make_rd_url($action){
+	    $token = session('token');
+	    $re_url = '/index.php?g=Xiaoqu&m=People&a='.$action;
+	    if (!empty($token)) $re_url .= '&token='.$token;
+	     
+	    $af_jump_re = session('re');
+	     
+	    if (!empty($af_jump_re)) $re_url = urldecode($af_jump_re);
+	    
+	    return $re_url;
 	}
 	
 	private function curl($url,$method = 'get'){

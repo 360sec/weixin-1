@@ -79,7 +79,7 @@ $('#qqlogin').click(function(){
 		   var A=window.open("{ZF::U('Xiaoqu/People/qqlogin')}","TencentLogin", 
 				   "width=450,height=320,menubar=0,scrollbars=1,\
 				   resizable=1,status=1,titlebar=0,toolbar=0,location=1");*/
-		 location.href="{ZF::U('Xiaoqu/People/qqlogin')}";
+		 location.href="<empty name='Think.get.re'>{ZF::U('Xiaoqu/People/qqlogin',array('token'=>$_GET['token']))}<else/>{ZF::U('Xiaoqu/People/qqlogin',array('token'=>$_GET['token'],'re'=>urlencode($_GET['re']) ))}</empty>";
 	};
 	login_func();
 });
@@ -88,7 +88,7 @@ $('#wblogin').click(function(){
 	 {
 		   //以下为按钮点击事件的逻辑。注意这里要重新打开窗口
 		   //否则后面跳转到QQ登录，授权页面时会直接缩小当前浏览器的窗口，而不是打开新窗口
-		   location.href="{ZF::U('Xiaoqu/People/wblogin')}";
+		   location.href="<empty name='Think.get.re'>{ZF::U('Xiaoqu/People/wblogin',array('token'=>$_GET['token']))}<else/>{ZF::U('Xiaoqu/People/wblogin',array('token'=>$_GET['token'],'re'=>urlencode($_GET['re']) ))}</empty>";
 		 };
 	login_func();
 });
