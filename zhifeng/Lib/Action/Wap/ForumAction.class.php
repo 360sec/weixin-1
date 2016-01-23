@@ -264,7 +264,7 @@ class ForumAction extends WapAction{
 			// 照片上传
 		if (IS_POST){
 			// 检查权限
-			if (empty($_SESSION['token'])) {
+			if (empty($this->token)) {
 				exit(json_encode(array('status'=>'error','msg'=>'你没有权限上传！')));
 			}
 				
