@@ -168,8 +168,57 @@
 										
 										
 <script>
+
+function addItem(){
+	
+	var count_empty = function(){
+		var num=0;
+		
+		$(".portrait").each(function(){
+			if ($(this).attr('value') == '') num++;
+		});
+		
+		return num;
+	};
+	
+	if (count_empty()==0) return false;
+	
+	var fun =  function( urls ){
+		console.log(document);
+		console.log(urls);
+		
+		$.each(urls,function(k,v){
+			
+			var ele = $(".portrait[value='']").get(0);
+			
+			$(ele).attr('value',v);
+			$('#'+$(ele).attr('id')+'_src').attr('src',v);
+			
+		});
+		
+		if (count_empty() == 0) {
+			$('#add_pic_btn').css('display','none');
+		}
+	};
+	
+	art.dialog.data('num',count_empty());
+	art.dialog.data('fun',fun);
+	
+	//art.dialog.data('goodslist_id',goodslist_id);
+	//art.dialog.data('call_back',call_back);
+	art.dialog.open('{ZF::U('uploadphoto')}&token={ZF:$token}', {
+		title: '上传图片',
+		width: '100%',
+	    height: '100%',
+	    left: '0%',
+	    top: '0%',
+	    fixed: true,
+	    resize: false,
+	    drag: false});
+}
 	
 	function upl(){
+		/*
 		var num=1;
 		var no1 = $("#portrait1_src").attr('src');
 		var no2 = $("#portrait2_src").attr('src');
@@ -209,6 +258,8 @@
 			num++;
 		}
 		upyunWapPicUpload('portrait'+num,200,200,'{ZF:$Think.get.token}');
+		*/
+		addItem();
 	}
 	setInterval(ddshow,1000);
 	function ddshow(){
@@ -317,14 +368,19 @@
 								<img src="" class="portrait_src" id="portrait7_src" />
 								<input class="portrait" type="hidden" value="" id="portrait7" name="pics7" size="80" />
 							</dd>
-							<dt id="after7"><label> </label></dt>										
+							
+							<!-- image8 -->
+							<dd style="display:none" id="imgdd8" type="image">
+								<img src="" class="portrait_src" id="portrait8_src" />
+								<input class="portrait" type="hidden" value="" id="portrait8" name="pics8" size="80" />
+							</dd>
+							
 
-					
 								
 
 					
-								<dd>
-									<a href="###" onclick="upl()" class="a_upload" style="color:red"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" /></a>
+								<dd id="add_pic_btn" style=" display:inline-block;">
+									<a href="###" onclick="upl()" class="a_upload" style="color:red;"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" /></a>
 								</dd>
 								<dt>
 									<label> 最多可上传8张图片</label>

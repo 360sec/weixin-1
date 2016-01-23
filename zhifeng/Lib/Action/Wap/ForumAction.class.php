@@ -15,6 +15,7 @@ class ForumAction extends WapAction{
 		parent::_initialize();
 		$this->checked_login();
 		$token = $this->_request('token');
+		//$this->assign('token',$token);
 		$isopen = M('Forum_config')->field('isopen,bgurl')->where("token = '$token'")->find();
 		
 		if($isopen['isopen'] == 0){
@@ -257,8 +258,92 @@ class ForumAction extends WapAction{
 	
 	}
 	
+	public function uploadphoto()
+	{
+	    
+			// 照片上传
+		if (IS_POST){
+			// 检查权限
+			if (empty($_SESSION['token'])) {
+				exit(json_encode(array('status'=>'error','msg'=>'你没有权限上传！')));
+			}
+				
+			// 检查数据可靠性
+			if (empty($_POST) || empty($_POST['image0'])){
+				exit(json_encode(array('status'=>'error','msg'=>'检测不到上传数据，可能是因为上传数据的结构不是约定的！')));
+			}
+			
+			$photos = array();
+			
+			foreach ($_POST as $key=>$image){
+			
+				// 保存照片数据为文件
+				$upload_data = explode(",", $image);
+				$upload_data = base64_decode($upload_data[1]);
+					
+				$get_image_url_path = null;
+				$upload_dirname = $this->___init_ppc_data_dir($get_image_url_path); // 引用传参
+				$save_image_filename = time().'_'.$key.'_'.rand(10000,99999).'.png';
+				
+				$save_status = @file_put_contents($upload_dirname.'/'.$save_image_filename, $upload_data);
+				
+				if ($save_status){
+					array_push($photos, $get_image_url_path.'/'.$save_image_filename);
+				}
+			
+			}
+			
+			
+			if (empty($photos)){
+				exit(json_encode(array('status'=>'error','msg'=>'由于服务器系统的原因，数据没能成功保存！')));
+			}else{
+				// 保存照片文件成功，返回url数据到前端
+				exit(json_encode(array('status'=>'success','urls'=>$photos,'msg'=>'已经成功保存了'.count($photos).'张照片，'.$intro_update_msg)));
+			}
+		}
+	    
+	    $this->display();
+	    
+	}
+	
+	protected function ___init_ppc_data_dir( &$url_path ){
+	    	
+	    $token = $_SESSION['token'];
+	    $first_c = mb_substr($_SESSION['token'],0,1,'UTF-8');
+	
+	    $dir_Uploads =  SITE_ROOT.'/data/Uploads';
+	    $dir_first_c =  SITE_ROOT.'/data/Uploads/'.$first_c;
+	    $dir_token_d =  SITE_ROOT.'/data/Uploads/'.$first_c.'/'.$token;
+	    $dir_ckeditor_d = SITE_ROOT.'/data/Uploads/'.$first_c.'/'.$token.'/PhonePhotoUpload';
+	
+	    if (!file_exists($dir_Uploads)||!is_dir($dir_Uploads)){
+	        mkdir($dir_Uploads,0777);
+	    }
+	
+	    if (!file_exists($dir_first_c)||!is_dir($dir_first_c)){
+	        mkdir($dir_first_c,0777);
+	    }
+	
+	    if (!file_exists($dir_token_d)||!is_dir($dir_token_d)){
+	        mkdir($dir_token_d,0777);
+	    }
+	
+	    if (!file_exists($dir_ckeditor_d)||!is_dir($dir_ckeditor_d)){
+	        mkdir($dir_ckeditor_d,0777);
+	    }
+	
+	    if (!file_exists($dir_ckeditor_d)||!is_dir($dir_ckeditor_d)){
+	        echo '初始化数据存放目录失败，不能使用上传功能！';
+	        exit();
+	    }else{
+	        $url_path = '/data/Uploads/'.$first_c.'/'.$token.'/PhonePhotoUpload';
+	        return $dir_ckeditor_d;
+	    }
+	}
+	
 	//发布新帖子
 	public function checkAdd(){
+	    
 		$data = array();
 		$data['uid'] = $this->_post('wecha_id');
 		

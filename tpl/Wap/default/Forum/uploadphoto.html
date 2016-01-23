@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>贴子图片上传</title>
+<script src="http://cdn.bootcss.com/jquery/2.1.4/jquery.min.js"></script>
+<script src="http://test.malruco.cn/PhonePhotoUpload/PhonePhotoUpload.js"></script>
+<script src="{ZF::STATICS}/artDialog/jquery.artDialog.js?skin=default"></script>
+<script src="{ZF::STATICS}/artDialog/plugins/iframeTools.js"></script>
+<script type="text/javascript">
+
+
+
+$(document).ready(function($){
+	
+	var returnURLs = function(urls){
+		
+		var fun = art.dialog.data('fun');
+		fun(urls);
+		
+		art.dialog.close();
+	}
+	
+	    $(".content").PhonePhotoUpload({
+	        remoteUrl:location.href,//设置图片上传路径
+	        /* redirectUrl:'',//设置上传完成后的跳转路径
+			ContentColor:'black',//设置上传模块的背景色
+			IconColor:"#999",//设置添加与删除图标的颜色
+			BorderColor:"#efefef",//设置添加与删除图标以及图片的边框颜色
+			ButtonColor:"#333",//设置上传按钮的背景颜色
+			BtnFontColor:"white",//设置上传按钮的字体颜色
+	     	ImgSize:'500px',//设置图片压缩后的宽度*/
+	     	PicCount:art.dialog.data('num'),//设置上传图片的限制数量
+	     	GetUrls:returnURLs,//设置上传完成后要处理已上传图片URLs的函数
+	    });
+	    
+	    $('#rd').click(returnURLs);
+	});
+     
+ </script>
+</head>
+<body style="margin:0;">
+
+
+<div class="content"></div>
+
+<input type="button" value="返里数据" id="rd">
+
+
+</body>
+</html>
