@@ -11,8 +11,9 @@
 <script type="text/javascript">
 
 
-
 $(document).ready(function($){
+
+
 	
 	var returnURLs = function(urls){
 		
@@ -20,17 +21,13 @@ $(document).ready(function($){
 		fun(urls);
 		
 		art.dialog.close();
-	}
+	};
+	
+	
+	 
 	
 	    $(".content").PhonePhotoUpload({
 	        remoteUrl:location.href,//设置图片上传路径
-	        /* redirectUrl:'',//设置上传完成后的跳转路径
-			ContentColor:'black',//设置上传模块的背景色
-			IconColor:"#999",//设置添加与删除图标的颜色
-			BorderColor:"#efefef",//设置添加与删除图标以及图片的边框颜色
-			ButtonColor:"#333",//设置上传按钮的背景颜色
-			BtnFontColor:"white",//设置上传按钮的字体颜色
-	     	ImgSize:'500px',//设置图片压缩后的宽度*/
 	     	PicCount:art.dialog.data('num'),//设置上传图片的限制数量
 	     	GetUrls:returnURLs,//设置上传完成后要处理已上传图片URLs的函数
 	    });
@@ -43,6 +40,50 @@ $(document).ready(function($){
 
 <div class="content"></div>
 
+<div id="msg"></div>
 
+<script type="text/javascript">
+
+wx.config({
+    debug: true,
+    appId: '{ZF:$signPackage["appId"]}',
+    timestamp: {ZF:$signPackage["timestamp"]},
+    nonceStr: '{ZF:$signPackage["nonceStr"]}',
+    signature: '{ZF:$signPackage["signature"]}',
+    jsApiList: [
+      // 所有要调用的 API 都要加到这个列表中
+      'chooseImage'
+    ]
+  });
+
+  wx.ready(function () {
+    // 在这里调用 API
+	    $('#msg').html('成功了');
+    
+	    wx.chooseImage({
+		    count: 8, // 默认9
+		    sizeType: ['original', 'compressed'], // 可以指定是原图还是压缩图，默认二者都有
+		    sourceType: ['album', 'camera'], // 可以指定来源是相册还是相机，默认二者都有
+		    success: function (res) {
+		       alert(res.localIds); // 返回选定照片的本地ID列表，localId可以作为img标签的src属性显示图片
+		    },
+		    fail:function(){
+		    	alert('hehe');
+		    }
+		});
+  });
+  
+  wx.error(function(res){
+	  $('#msg').html('nonono');
+	});
+  
+  alert(10);
+  
+  
+</script>
+
+<php>
+//print_r($signPackage);
+</php>
 </body>
 </html>

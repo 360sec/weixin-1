@@ -254,12 +254,21 @@ class ForumAction extends WapAction{
 			$this->error('您需要完善个人信息才能进入发帖',U('Userinfo/index',array('token'=>$token,'wecha_id'=>$uid,'redirect'=>'Forum/add|wecha_id:'.$uid)));
 		}		*/
 		
+		require_once SITE_ROOT.'/'.APP_PATH."Lib//ORG/WeixinSDK/JSSDK.php";
+		 
+		$jssdk = new JSSDK("wx54a224e2def2d349", "6b66c02c993e1a31fa4219c5dbe4ae4f");
+		 
+		$signPackage = $jssdk->GetSignPackage();
+		
+		$this->assign('signPackage',$signPackage);
+		
 		$this->display();
 	
 	}
 	
 	public function uploadphoto()
 	{
+	    
 	    
 			// 照片上传
 		if (IS_POST){
@@ -302,6 +311,8 @@ class ForumAction extends WapAction{
 			}
 		}
 	    
+		
+		
 	    $this->display();
 	    
 	}
@@ -979,6 +990,24 @@ class ForumAction extends WapAction{
 		}else{	
 				echo 0;
 		}
+	}
+	
+	// 直接删除贴子
+	public function delTopicsReal(){
+	    $uid = $this->_get('wecha_id');
+	    if($uid == ''){
+	        $this->error('您需要关注官方公众号才能进入');
+	    }
+	
+	    $id = $this->_get('tid','intval');
+	
+	    $token = $this->_get('token');
+	
+	    if(M('Forum_topics')->where("id = $id AND token = '$token' AND uid = '$uid' AND status = 1")->delete()){
+	        $this->success('删除成功');
+	    }else{
+	        $this->error('删除失败');
+	    }
 	}
 	
 	//删除评论

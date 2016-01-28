@@ -14,7 +14,7 @@
 		<link rel="stylesheet" type="text/css" href="{ZF::STATICS}/forum/css/main.css" ></link>
 		<link rel="stylesheet" type="text/css" href="{ZF::STATICS}/forum/css/dialog.css" ></link>
 		<script src="{ZF::STATICS}/forum/js/jquery_min.js" ></script>
-		<script src="{ZF::STATICS}/forum/js/main.js" ></script>
+		<!-- <script src="{ZF::STATICS}/forum/js/main.js" ></script> -->
 		<script src="{ZF::STATICS}/forum/js/helper_min.js" ></script>
 		<script src="{ZF::STATICS}/forum/js/dialog_min.js" ></script>
 
@@ -129,6 +129,9 @@
 								</li>
 								<li>
 									<a class="a_like"><span class="icons icons_like">&nbsp;</span><label><if condition="$list['favourid'] neq NULL">{ZF::count(explode(',',$list['favourid']))}<else />0</if></label></a>
+								</li>
+								<li>
+									<a onclick="return (function(){var a= confirm('确定要删除吗'); if (a) return true;else return false;})()" style="color:red;" href="{ZF::U('Forum/delTopicsReal',array('token'=>$_GET['token'],'tid'=>$list['id'],'wecha_id'=>$_GET['wecha_id']))}">删除</a>
 								</li>
 							</ul>
 						</footer>
