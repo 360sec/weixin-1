@@ -36,15 +36,15 @@ body .mainmenu li a{padding: 6px 10px 6px 20px;}
 		<li>
 			<a class="classify_call" style="text-decoration:none;" href="<if condition="$vo['url'] eq ''">{ZF::U('Wap/Index/lists',array('classid'=>$vo['id'],'token'=>$vo['token']))}<else/>{ZF:$vo.url|htmlspecialchars_decode}</if>" >
 				<em></em>
-                <div style="float:right;">
-                	<php>if(substr($vo['url'],0,4)=='tel:'){echo '<img src="/tpl/Wap/default/common/css/200/phone.png" />';} </php>
-                </div>
                 <p style="height:48px;text-overflow:ellipsis;white-space:nowrap;overflow: hidden;">
                 	<span>{ZF:$vo.name}</span><br />
                     <span style="color:#999999;font-size:14px;">{ZF:$vo.info} </span>
                 </p>
-               
 			</a>
+			
+                <div style="float:right; margin-top:-60px;">
+                	<php>if(!empty($vo['url2'])){echo '<a href="tel:'.$vo['url2'].'"><img src="/tpl/Wap/default/common/css/200/phone.png" /></a>';} </php>
+                </div>
 		</li>
 	</volist>
 </ul>
