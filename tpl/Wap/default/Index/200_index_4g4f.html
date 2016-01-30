@@ -34,16 +34,16 @@ body .mainmenu li a{padding: 6px 10px 6px 20px;}
 <ul class="mainmenu">
 	<volist name="info" id="vo">
 		<li>
-			<a class="classify_call" style="text-decoration:none;" href="<if condition="$vo['url'] eq ''">{ZF::U('Wap/Index/lists',array('classid'=>$vo['id'],'token'=>$vo['token']))}<else/>{ZF:$vo.url|htmlspecialchars_decode}</if>" >
+			<a class="classify_call" style="text-decoration:none;" href="#" >
 				<em></em>
                 <p style="height:48px;text-overflow:ellipsis;white-space:nowrap;overflow: hidden;">
                 	<span>{ZF:$vo.name}</span><br />
                     <span style="color:#999999;font-size:14px;">{ZF:$vo.info} </span>
                 </p>
 			</a>
-			
-                <div style="float:right; margin-top:-60px;">
-                	<php>if(!empty($vo['url2'])){echo '<a href="tel:'.$vo['url2'].'"><img src="/tpl/Wap/default/common/css/200/phone.png" /></a>';} </php>
+                <div style=" width:116px;float:right; margin-top:-48px; overflow: hidden; padding:0 10px;">
+                	<php>if($vo['url']!=U('Wap/Index/lists',array('classid'=>$vo['id'],'token'=>$vo['token'])) && $vo['url']!=U('Wap/Index/lists',array('classid'=>$vo['id'],'token'=>$vo['token'],'wecha_id'=>$_GET['wecha_id']))){echo '<a style=" text-decoration:none;box-shadow:none; border:1px solid #CCC; border-radius:3px; padding:3px;  margin-left:10px; float:right;" href="'.htmlspecialchars_decode($vo['url']).'"><img src="/tpl/Wap/default/common/css/200/homepage.png" /></a>';} </php>
+                	<php>if(!empty($vo['url2'])){echo '<a style=" text-decoration:none; box-shadow:none;border:1px solid #CCC; border-radius:3px; padding:3px; float:right;" href="tel:'.$vo['url2'].'"><img src="/tpl/Wap/default/common/css/200/phone.png" /></a>';} </php>
                 </div>
 		</li>
 	</volist>
