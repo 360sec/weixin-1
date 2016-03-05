@@ -100,6 +100,9 @@ function ajaxopen(url, callback) {
 							<span class="snav-big" type="member"><i class="icon-credit-card"></i><span>会员</span></span>
 							<!--span class="snav-big" type="weixinuser"><i class="icon-credit-card"></i><span>粉丝</span></span>
 							<span class="snav-big" type="other"><i class="icon-gift"></i><span>其它</span></span-->
+							    <if condition="$user['account_type'] eq 1">
+							        <span class="snav-big" type="community"><i class="icon-sitemap"></i><span>社区管理</span></span>
+						        </if>
 							</if>
 							<span class="snav-big" type="basic"><i class="icon-star"></i><span>设置<br>&<br>微信</span></span>
 						</div>
@@ -432,6 +435,10 @@ function ajaxopen(url, callback) {
 								<li class="snav-list hide"><a href="{ZF::U('Wechat_group/index',array('token'=>$token))}" target="main">粉丝管理</a></li>	
 								<li class="snav-list hide"><a href="{ZF::U('Wechat_behavior/statistics',array('token'=>$token))}" target="main">7日统计分析</a></li>
 								<li class="snav-list hide"><a href="{ZF::U('Wechat_behavior/statisticsTrend',array('token'=>$token))}" target="main">趋势对比分析</a></li>	
+							</ul>
+							<ul class="snav unstyled hide" id="community">
+								<li class="snav-header"><a href="" target="main">社区订单<i class="arrow"></i></a></li>
+								<li class="snav-list hide"><a href="{ZF::U('Community/orderlist',array('token'=>$token))}" target="main">订单查询</a></li>
 							</ul>
 							<ul class="snav unstyled hide" id="other">							
 								<li class="snav-header-list"><a href="{ZF::U('Api/index',array('token'=>$token))}" target="main">融合第三方接口</a></li>								

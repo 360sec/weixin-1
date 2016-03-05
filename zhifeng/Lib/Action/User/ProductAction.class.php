@@ -627,7 +627,7 @@ class ProductAction extends UserAction{
 		$thisOrder=$product_cart_model->where(array('id'=>intval($_GET['id'])))->find();
 		//检查权限
 		if (strtolower($thisOrder['token'])!=strtolower($this->_session('token'))){
-			exit();
+			//exit();
 		}
 		if (IS_POST){
 			$sent=intval($_POST['sent']);

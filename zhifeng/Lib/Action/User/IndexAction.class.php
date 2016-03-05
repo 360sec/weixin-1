@@ -17,6 +17,7 @@ class IndexAction extends UserAction{
 			$this->assign('token',$token);
 			$this->assign('group',$groups);
 			$this->assign('page',$page->show());
+			$this->assign('user',$this->user);
 			$this->display();
 		}
 	public function help(){
