@@ -1,16 +1,26 @@
 <include file="Public:head"/>
 <link rel="stylesheet" type="text/css" href="{ZF::RES}/css/cymain.css" />
 
-<div class="content" style="" >
+<div class="content">
 
 <div class="cLineB">
   <h4>支付接口配置</h4>
  </div>
 <include file="Payment:menu"/>        
 <div class="msgWrap bgfc" style="margin-top:10px;">
+ 
+<div style=" width:90%; padding: 20px; margin:0px auto; text-align:center; background-color:#EEE;">
+	<form class="form" method="post" action="" target="main" enctype="multipart/form-data">
+		<span style="font-weight: bold;">支付开关：</span>
+		<select name="enabled" id="enabled" style="height:25px; line-height: 25px;">
+			<option value="0" <if condition="$enabled eq 0">selected</if>>关闭支付</option>
+			<option value="1" <if condition="$enabled eq 1">selected</if>>开启支付</option>
+		</select>
+		<input type="submit" style="height:25px; line-height: 20px; padding:0px 5px;" class="btnGreen" value="保存">
+	</form>
+</div>
 
-<iframe src="http://www.easypay.com/merchant/login?a={ZF:$urltype_encrypted_token}&b={ZF:$urltype_encrypted_ip}" width="100%" style="height:10000px;" frameborder="0"></iframe>
-
+<iframe src="http://{ZF:$Think.config.easypay.domain}/merchant/login?a={ZF:$urltype_encrypted_token}&b={ZF:$urltype_encrypted_ip}" width="100%" style="height:10000px;" frameborder="0"></iframe>
 
 </div> 
 </div>

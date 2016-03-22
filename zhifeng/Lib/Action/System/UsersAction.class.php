@@ -147,11 +147,12 @@ class UsersAction extends BackAction{
 					}
                     $this->success('编辑成功！',U('Users/edit',array('id'=>$_POST['id'])));
                 }else{
+                    /*
                 	echo '<pre>';
                 	print($UserDB->getLastSql());
                 	print_r($UserDB->data());
                 	print_r($_POST);echo '</pre>';
-                	exit();
+                	exit();*/
                      $this->error('编辑失败：'.$UserDB->getError(),U('Users/edit',array('id'=>$_POST['id'])));
                 }
             

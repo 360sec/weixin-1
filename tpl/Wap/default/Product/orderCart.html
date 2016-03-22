@@ -86,7 +86,6 @@ if (location.href.indexOf("PHPSESSID")<0) location.href=location.href+"&PHPSESSI
 		<ul id="payment_mode" class="rd" style="-webkit-box-shadow:none;">
 			<li style="line-height:2em;">
 			<select id="payment_selector" name="payment" style="width: 100%;border-radius: 0.5em;padding: 5px; line-height:30px;height: 30px;">
-			    	<option value="easypay">支付宝(亚天担保)</option>
 				<if condition="$payment">
 				<volist id="v" name="payment">
 					<option value="{ZF:$v.pay_code}" style="line-height: 50px;">{ZF:$v.pay_name}<if condition="($v.pay_code eq 'zfalipay') OR($v.pay_code eq 'wapalipay')">(直付给商家)</if></option> 

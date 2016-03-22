@@ -30,7 +30,7 @@ setTimeout("xian()",5000);
     <?php }else{ ?>
     	<img src="{ZF::RES}/images/portrait.jpg" width="50" height="50" />
     <?php } ?>
-		<ul class="ul">
+		<ul>
         <?php if(!empty($_GET['id'])){ ?>
 			<li><strong>{ZF:$wecha.wxname}</strong><img src="{ZF::RES}/images/vip.png" /></li>
 			<li>微信号：{ZF:$wecha.weixin}</li>
@@ -39,7 +39,7 @@ setTimeout("xian()",5000);
 			<li><strong>等级：</strong><strong style="color:#CC3300;" >VIP<php>if($_SESSION['gid']>1){echo $_SESSION['gid']-1;}else{echo 0;}</php></strong></li>
         <?php } ?>
 		</ul>
-		<ul class="ul2" >
+		<ul>
 			<li>VIP有效时间：<if condition="empty($viptime)">不限时间<else/>{ZF:$viptime|date="Y-m-d",###}</if></li>
 			<li>图文自定义：{ZF:$thisUser.diynum}/{ZF:$userinfo.diynum}</li>
 		</ul>

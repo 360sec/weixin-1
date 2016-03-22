@@ -50,7 +50,7 @@
 	<body onselectstart="return true;" ondragstart="return false;" class="discuss_my discuss_my_tiezi">
 		<div id="container" class="container" <if condition="$bgurl neq NULL">style="background:url('{ZF:$bgurl}') repeat-y center 0"</if>>
 			<header>
-			    <include file="cats"/>
+			    
 				<div class="header_1">
 					<ul class="tbox">
 						<li>
@@ -95,7 +95,7 @@
 			<div class="body">
 				<div class="list_article">
 					<article>
-						<a style="color:#5d5d5d" href="{ZF::U('Userinfo/index',array('token'=>$_GET['token'],'wecha_id'=>$_GET['wecha_id'],'redirect'=>'Forum/myContent|wecha_id:'.$_GET['wecha_id']))}"><div style="margin:10px;text-align:center;">修改个人资料</div></a>
+						<a style="color:#5d5d5d" href="{ZF::U('Xiaoqu/People/home',array('token'=>$_GET['token'],'wecha_id'=>$_GET['wecha_id'],'redirect'=>'Forum/myContent|wecha_id:'.$_GET['wecha_id']))}"><div style="margin:10px;text-align:center;">修改个人资料</div></a>
 					</article>
 				</div>
 				<div class="list_article list_message">
@@ -126,6 +126,7 @@
 					
 				</div>
 			</div>
+			<include file="cats"/>
 			<include file="footermenu"/>			
 		</div>
 <script type="text/javascript">

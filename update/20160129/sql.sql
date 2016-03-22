@@ -1,0 +1,1 @@
+ALTER TABLE `zfwx_classify` ADD `url2` VARCHAR(255) NULL AFTER `url`;

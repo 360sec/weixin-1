@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<link rel="stylesheet" href="//cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap.min.css">
+<link rel="stylesheet" href="//cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+<script src="//cdn.bootcss.com/jquery/1.11.3/jquery.min.js"></script>
+<script src="//cdn.bootcss.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+<style>
+td,th {text-align:center;}
+</style>
+</head>
+<body>
+
+<table class="table table-hover table-condensed">
+    <thead>
+        <tr>
+            <th>编号</th>
+            <th>店铺token</th>
+            <th>商品数量</th>
+            <th>订单总价</th> 
+            <th>下单时间</th>
+            <th>状态</th>
+            <th>操作</th>
+        </tr>
+        <php>
+        
+        foreach($orders as $k=>$v) {
+        
+            $status_str = '<span style="color:red;">未支付</span>';
+            if ($v['paid']) $status_str = '<span style="color:green;">已支付</span>';
+        
+            echo '<tr>';
+            echo '<td>'.$v['orderid'].'</td>'.
+                 '<td><a href="'.$v['token'].'"><img style="width:50px;height:30px;" src="'.$v['headerpic'].'">&nbsp;'.$v['wxname'].'</a></td>'.
+                 '<td>'.$v['total'].'</td>'.
+                 '<td>'.$v['price'].'</td>'.
+                 '<td>'.date('Y-m-d H:i:s',$v['time']).'</td>'.
+                 '<td>'.$status_str.'</td>'.
+                 '<td><a href="'.U('User/Product/orderInfo',array('token'=>$v['token'],'id'=>$v['id'])).'">查看</a></td>';
+            echo '</tr>';
+        }
+        </php>
+    </thead>
+
+</table>
+
+</body>
+</html>

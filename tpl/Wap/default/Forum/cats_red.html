@@ -1,0 +1,110 @@
+<style type="text/css">
+.nav_cat{font-size:16px;font-family:'微软雅黑'; margin:6px; border-radius:5px; overflow:hidden;}
+.nav_cat .nav_cat_items { overflow: hidden; line-height:30px; margin:2px;}
+.nav_cat .nav_cat_items li{ list-style: none; float:left; width:25%; overflow: hidden;}
+.nav_cat .nav_cat_items li a { display:block; border-radius:2px; background-color:rgba(255,255,255,0.5); text-align:center; margin:2px; height: 30px; overflow: hidden; }
+.classify{margin:0px 6px;font-size:16px; font-weight:bold; line-height:16px; padding:0 5px; color: #FFF;}
+.show_m{ background-color:#000; color:#FFF;  text-align:center; line-height: 30px; display:none;}
+.nav_cat a { color:#000;}
+.classify a {color: #FFF;}
+</style>
+
+
+<div style=" background-color:#333; padding:10px 0;">
+<div>
+	<div class="classify">
+		
+		<span style="float:right;padding-right: 10px;">
+		     返回 
+			 <if condition="$cat['parentid'] neq 0">
+				    
+					    <a href="{ZF::U('Wap/Forum/index',array('wecha_id'=>$_GET['wecha_id'],'token'=>$_GET['token'],'catid'=>$pcat['id']))}">
+					    	{ZF:$pcat['name']}
+					    </a>
+				    
+			<else/>
+				    
+					    <a href="{ZF::U('Wap/Forum/index',array('wecha_id'=>$_GET['wecha_id'],'token'=>$_GET['token'],'catid'=>0))}">
+					           	首页
+					    </a>
+				   
+			</if>
+		</span>
+		<span style="padding-left: 5px;">
+		     当前版块：
+			<if condition="$catid neq 0">
+					
+						<a href="{ZF::U('Wap/Forum/index',array('wecha_id'=>$_GET['wecha_id'],'token'=>$_GET['token'],'catid'=>$cat['id']))}">
+							{ZF:$cat['name']}
+						</a>
+					
+			<else/>
+				    
+					    <a href="{ZF::U('Wap/Forum/index',array('wecha_id'=>$_GET['wecha_id'],'token'=>$_GET['token'],'catid'=>0))}">
+					          	 总版块
+					    </a>
+				    
+			</if>
+		</span>
+	</div>	
+</div>
+
+<div class="nav_cat">
+
+	<div class="nav_cat_items">
+		<ul>
+			<li> 
+				<strong>
+					<a href="{ZF::U('Wap/Forum/index',array('wecha_id'=>$_GET['wecha_id'],'token'=>$_GET['token'],'catid'=>0))}">
+						总版块
+					</a>
+				</strong>
+			</li>
+			<notempty name="cats">
+			   <volist name="cats" id="vo">
+			      <li class="part_nav">
+				      <a href="{ZF::U('Wap/Forum/index',array('wecha_id'=>$_GET['wecha_id'],'token'=>$_GET['token'],'catid'=>$vo['id']))}">
+				      	{ZF:$vo.name}
+				      </a>
+			      </li>
+			   </volist>
+			</notempty>
+		</ul>
+        <empty name="cats">
+        	<div style="line-height: 30px; text-align: center;">没有子版块</div>
+        </empty>		
+
+	</div>		
+
+			<div onclick="show_hide()" class="show_m">
+				<strong>
+					<span class="more" style="cursor: pointer;">
+						MORE
+					</span>
+				</strong>
+			</div>		
+</div>
+
+</div>
+<script type="text/javascript">
+
+var nav_cat_items_height = $('.nav_cat_items').height();
+
+if (nav_cat_items_height > 68){
+	$('.show_m').css({display:'block'});
+	$('.nav_cat_items').css({height:'68px'});
+	
+}
+
+function show_hide(){
+	
+	var target_h = null;
+	
+	var h = $('.nav_cat_items').height();
+	
+	if (h == nav_cat_items_height)  target_h = 68;
+	else target_h = nav_cat_items_height;
+	
+	$('.nav_cat_items').animate({height: target_h}, 200 );
+}
+</script>

@@ -35,8 +35,31 @@
 				<a href="{ZF::U('mlogin')}">手机版后台登录</a>
 			</div>
 			<div class="item">
-				<button type="submit" id="reg-btn" class="btn-register">登录</button>
-				<!--<input name="submit" type="submit" class="submit sub" value="登  录" style="padding:6px 50px;margin-left:55px;"  />  -->
+				<button type="submit" id="reg-btn" class="btn-register">登录</button><!-- <br><br>
+				<a href="#" id="qqlogin"><img src="http://qzonestyle.gtimg.cn/qzone/vas/opensns/res/img/Connect_logo_4.png"></a><br><br>
+				<a href="#" id="wblogin"><img src="http://img.t.sinajs.cn/t4/appstyle/open/images/website/loginbtn/loginbtn_02.png"></a><br>
+<script>
+$('#qqlogin').click(function(){
+	var login_func = function ()
+	 {
+		   //以下为按钮点击事件的逻辑。注意这里要重新打开窗口
+		   //否则后面跳转到QQ登录，授权页面时会直接缩小当前浏览器的窗口，而不是打开新窗口
+		   var A=window.open("{ZF::U('Xiaoqu/People/qqlogin')}","TencentLogin", 
+				   "width=450,height=320,menubar=0,scrollbars=1,\
+				   resizable=1,status=1,titlebar=0,toolbar=0,location=1");
+	};
+	login_func();
+});
+$('#wblogin').click(function(){
+	var login_func = function ()
+	 {
+		   //以下为按钮点击事件的逻辑。注意这里要重新打开窗口
+		   //否则后面跳转到QQ登录，授权页面时会直接缩小当前浏览器的窗口，而不是打开新窗口
+		   location.href="{ZF::U('Xiaoqu/People/wblogin')}";
+		 };
+	login_func();
+});
+</script> -->
 			</div> 
 			<INPUT value=3e9fde7441cc55bf46afe7f8361af205_c700381a595ea906f05ae5636574d102 type=hidden name=__hash__>
 			<input type="hidden" name="__hash__" value="3e9fde7441cc55bf46afe7f8361af205_fdaa3abcec1d9c172fb1560e9236a331"/>    

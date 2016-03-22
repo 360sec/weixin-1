@@ -1,0 +1,1 @@
+ALTER TABLE `zfwx_forum_topics` CHANGE `photos` `photos` VARCHAR(3000) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL;

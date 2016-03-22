@@ -136,12 +136,34 @@ $(function() {
 						$('#m_list').append(_tmp_html);
 						
 						control_img_size();
+						
+						/****  状态保存  *****/
+						history.pushState({page:(parseInt(_page)-1),content:$("#m_list").html()},null,"#page"+(parseInt(_page)-1));
+						/****  状态保存  *****/
 					}
 				});
 			}
 		});
 	}
 });
+
+
+
+
+/****  状态恢复  *****/
+if (history.state){
+	$("#m_list").html(history.state.content);
+	$('#show_more').attr('page',parseInt(history.state.page)+1);
+}else{
+	history.replaceState({page:1,content:$("#m_list").html()},null,"#page1");
+}
+window.onpopstate = function(e){
+	if (history.state){
+		$("#m_list").html(history.state.content);
+		$('#show_more').attr('page',parseInt(history.state.page)+1);
+	}
+}
+/****  状态恢复  *****/
 </script>
 
 <if condition="$kefu['sc'] eq '1'"><include file="footsrc"/></if>

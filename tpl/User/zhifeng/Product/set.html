@@ -54,13 +54,45 @@ afterBlur: function(){this.sync();}
         </td> 
        </tr> 
        <tr> 
+        <th><span class="red">*</span>品牌：</th> 
+        <td>
+               <select name="brand" id="select_brand">
+               		<option value="">请选择品牌</option>
+                   <volist name="brands" id="vo">
+                     <option value="{ZF:$vo.id}"<php> if ($set['brand'] == $vo['id']) echo ' selected="selected"';</php>>{ZF:$vo.name}</option>
+                   </volist>
+               </select>&nbsp;&nbsp;
+               
+               <span onClick="addItem( '添加品牌');" style="color:#FF6600; cursor:pointer;">添加品牌</span>
+               <script type="text/javascript">
+	   			function addItem( title ){
+	   				
+					//art.dialog.data('goodslist_id',goodslist_id);
+					//art.dialog.data('call_back',call_back);
+					art.dialog.open('{ZF::U('User/Brand/add')}', {
+						title: title,
+						width: '100%',
+					    height: '100%',
+					    left: '0%',
+					    top: '0%',
+					    fixed: true,
+					    resize: false,
+					    drag: false});
+				}
+				</script>
+		</td> 
+       </tr>
+
+       <tr> 
         <th><span class="red">*</span>商品类别：</th> 
         <td><span class="red">{ZF:$productCatData.name}</span></td> 
        </tr>
+
        <tr> 
         <th><span class="red">*</span>社区类目：</th> 
         <td>
                <select name="community_catid" id="community_catid">
+               		<option value="">请选择社区类目</option>
                    <volist name="wz_cates" id="vo">
                      <option value="{ZF:$vo.id},{ZF:$vo.name}"<php> if ($set['community_catid'] == $vo['id']) echo ' selected="selected"';</php>>{ZF:$vo.name}</option>
                    </volist>
@@ -474,7 +506,8 @@ $(document).ready(function(){
 					images:JSON.stringify(images),
 					token:'{ZF:$token}',
 					catid:'{ZF:$catid}',
-					community_catid:$("#community_catid").val()
+					community_catid:$("#community_catid").val(),
+					brand:$("#select_brand").val(),
 					};
 		$.post("{ZF::U('Product/productSave')}", data, function(response){
 			if (response.error_code == false) {

@@ -1,5 +1,12 @@
 <?php
 class PeopleAction extends XiaoquAction {
+    
+    const QQ_APPKEY = '101282915';
+    const QQ_APPSERCET = '958939f3ec471c72bfabb64f1a19c609';
+    
+    const WEIBO_APPKEY = '2291716182';
+    const WEIBO_APPSERCET = 'e359231ec74530e389702fefc3a233cd';
+    
 	public $token;
 	
 	/**
@@ -20,20 +27,75 @@ class PeopleAction extends XiaoquAction {
 				
 			}else{
 			
-				$db = D('People');
-				if ($rs = $db->create()){
-					if ($id = $db->add()){
-						//自动登录
-						//$error = $error.''.$id;
-						// 发送帐号信息到手机短信
-						$this->sendSMS(array($_POST['phone']),'您刚刚完成了注册，你的登录密码是'.$_POST['password'].'，请妥善保管。', $err);
-						$this->login($id);
-					}else{
-						$error = $db->getDbError();
-					}
-				}else{
-					$error = $db->getError();
-				}
+			    //如果是QQ登录注册，则提前生成随机密码
+			    $TPAuth = session('TPAuth');
+			    $msg = '';
+			    if (!empty($TPAuth)) {
+			        $_POST['password'] = 'pass'.time();
+			        $_POST['password_c'] = $_POST['password']; 
+			    }
+			    
+			    // 检查是否已存在些手机帐户，是则直接绑定
+			    $user_id = M('people')->where(array('phone'=>$_POST['phone']))->getField('id');
+			    if (!empty($user_id)) {
+			        
+			         if ($this->bindTPAuth($TPAuth['vendor'],$user_id, $TPAuth['openid'])) {
+			             
+			             $TPAuth_msg = null;
+			             
+			             if ($TPAuth['vendor'] == 'qq') $TPAuth_msg = 'QQ帐号('.$TPAuth['info']->nickname.')';
+			             elseif ($TPAuth['vendor'] == 'weibo') $TPAuth_msg = '微博帐号('.$TPAuth['info']->nickname.')';
+			             
+			             $this->sendSMS(array($_POST['phone']),'您刚刚完成了'.$TPAuth_msg.'与手机的绑定操作，您以后可以直接使用此帐户来登录了。');
+			             
+			         }else{
+			             exit('绑定出错');
+			         }
+			         
+			         $this->login($user_id);
+			         
+			    } else {
+			        
+			        // 不存在，全完注册手机帐户
+			        $db = D('People');
+			        if ($rs = $db->create()){
+			            if ($id = $db->add()){
+			                
+			                
+			                $bind_msg = '';
+			                if (!empty($TPAuth)) {
+			                    
+			                    if ($this->bindTPAuth($TPAuth['vendor'],$id, $TPAuth['openid'])) {
+			                        
+			                        $TPAuth_msg = null;
+			                        
+			                        if ($TPAuth['vendor'] == 'qq') $TPAuth_msg = 'QQ帐号('.$TPAuth['info']->nickname.')';
+			                        elseif ($TPAuth['vendor'] == 'weibo') $TPAuth_msg = '微博帐号('.$TPAuth['info']->nickname.')';
+			                        
+			                        $bind_msg = $TPAuth_msg.'已经与您的手机帐户绑定，您以后也可以直接使用此QQ帐户来登录。';
+			                        
+			                    }else{
+			                        exit('绑定出错');
+			                    }
+			                    
+			                }
+			                
+			                $this->sendSMS(array($_POST['phone']),'您刚刚完成了注册，你的登录密码是'.$_POST['password'].'，请妥善保管。'.$bind_msg, $err);
+			                
+			                $this->login($id);
+			                
+			            }else{
+			                $error = $db->getDbError();
+			            }
+			        }else{
+			            $error = $db->getError();
+			        }
+			        
+			        
+			        
+			    }
+			    
+				
 			
 			}
 		}
@@ -41,6 +103,21 @@ class PeopleAction extends XiaoquAction {
 		$this->assign('error',$error);
 		
 		$this->display();
+	}
+	
+	private function bindTPAuth($vendor,$user_id,$openid)
+	{
+	    $c_name = 'openid_';
+	    if ($vendor == 'qq') $c_name .= 'qc';
+	    if ($vendor == 'weibo') $c_name .= 'wb';
+	    
+	    // 绑定QQ帐号
+	    $Set_rs = M('people')->where(array('id'=>$user_id))->setField($c_name,$openid);
+	    if ($Set_rs) {
+	        return true;
+	    }else{
+	        return false;
+	    }
 	}
 
 	/**
@@ -89,13 +166,34 @@ class PeopleAction extends XiaoquAction {
 	
 	public function home() {
 		
-		
-		if (!$this->is_logined()) $this->error('您还没有登录！',U('login',array('token'=>$_GET['token'],'re'=>urlencode($_GET['re']))));
-		$this->display();
+	    if (IS_POST) {
+	        
+	        // 查找所有商家门店信息
+	        $companys = M('company')->select();
+	        
+	        exit(json_encode($companys));
+	        
+	    } else {
+	        
+	        $wxusers = $this->getCommunityTokens($_GET['token']);
+	         
+	        $this->assign('community_shops',$wxusers);
+	         
+	        $district_communitysites = $this->getCommunitysitesOfDistrictByToken($_GET['token']);
+	        
+	        $this->assign('district_communitysites',$district_communitysites);
+	         
+	        // if (!$this->is_logined()) $this->error('您还没有登录！',U('login',array('token'=>$_GET['token'],'re'=>urlencode($_GET['re']))));
+	        $this->display();
+	        
+	    }
+	    
+	    
 	}
 	
 	public function logout(){
 		$this->setPeopleSession();
+		$this->clearTPAuthSession();
 		$this->display();
 	}
 	
@@ -265,6 +363,13 @@ class PeopleAction extends XiaoquAction {
 		session('people',$people);
 	}
 	
+	public function clearTPAuthSession(){
+	    $TPAuth = session('TPAuth');
+	    if (!empty($TPAuth)) {
+	        session('TPAuth',null);
+	    }
+	}
+	
 	private function refreshPeopleSession(){
 		$people = session('people');
 		$new_people = D('People')->where(array('id'=>$people['id']))->find();
@@ -278,5 +383,246 @@ class PeopleAction extends XiaoquAction {
 		$s = session('people');
 		if (empty($s))  return false;
 		else return true;
+	}
+	
+	public function qqlogin() 
+	{
+	    // 保存re token 以便授权后恢复
+	    $this->saveReNToken();
+	    
+	    $authorize_url = 'https://graph.qq.com/oauth2.0/authorize?response_type=code&client_id='.self::QQ_APPKEY.'&redirect_uri='.urlencode('http://www.abiza.cn/qqloginredirect').'&state=hahagogo';
+	    
+	    header('Location: '.$authorize_url);
+	}
+	
+	Public function qqloginredirect() 
+	{
+	    if (!empty($_GET['code'])) {
+	        
+	        $AuthorizationCode = $_GET['code'];
+	        
+	        $AccessToken_url = 'https://graph.qq.com/oauth2.0/token'.
+	            '?grant_type=authorization_code'.
+	            '&client_id='.self::QQ_APPKEY.
+	            '&client_secret='.self::QQ_APPSERCET.
+	            '&code='.$AuthorizationCode.
+	            '&redirect_uri='.urlencode('http://www.abiza.cn/qqloginredirect');
+	        
+	        $AccessToken_rs = $this->curl($AccessToken_url);
+	        
+	        $pattern = '/^'.preg_quote('access_token=').'(.+?)'.preg_quote('&').'/i';
+	        $reg_rs = preg_match($pattern, $AccessToken_rs, $matches);
+	        
+	        $AccessToken = null;
+	        if ($reg_rs){
+	            $AccessToken = $matches[1];
+	        }else{
+	            exit('无法取得$AccessToken'.$AccessToken_rs);
+	        }
+	        
+	        $OpenID_url = 'https://graph.qq.com/oauth2.0/me?access_token='.$AccessToken;
+	        
+	        $OpenID_url_rs = $this->curl($OpenID_url);
+	        
+	        eval (str_replace(')','\')',str_replace('callback(','$js_data = json_decode(\'',$OpenID_url_rs)));
+	        
+	        $OpenID = null;
+	        $UserInfo = null;
+	        if (!empty($js_data)){
+	            
+	            $OpenID = $js_data->openid;
+	            
+	            // 获取用户信息
+	            $get_user_info_url = 'https://graph.qq.com/user/get_user_info'.
+	            '?access_token='.$AccessToken.
+	            '&oauth_consumer_key='.self::QQ_APPKEY.
+	            '&openid='.$OpenID;
+	            
+	            $get_user_info_rs = $this->curl($get_user_info_url);
+	            
+	            if (!empty($get_user_info_rs)) {
+	                $UserInfo = json_decode($get_user_info_rs);
+	            }else{
+	                exit('无法取得QQ用户信息');
+	            }
+	            
+	            
+	            // 保存到session备用
+	            session('TPAuth',array(
+	                'vendor'=>'qq',
+	                'openid'=>$OpenID,
+	                'info'=>$UserInfo,
+	            ));
+	            
+	        } else {
+	            exit('无法取得openid');
+	        }
+	        
+	        // 查找peopel数据表，得到people_id
+	        $people_id = M('people')->where("openid_qc='$OpenID'")->getField('id');
+	        
+	        if ($people_id){
+	            
+	            $this->login($people_id,false);
+	            
+	            
+	            header('Location: '.$this->make_rd_url('home'));
+	            
+	        }else{
+	            
+	            // 没有注册手机，进入注册流程
+	            header('Location: '.$this->make_rd_url('register'));
+	            
+	        }
+	        
+	    }
+	    
+	    
+	    
+	}
+	
+	public function wblogin()
+	{
+	    // 保存re token 以便授权后恢复
+	    $this->saveReNToken();
+	    
+	    $authorize_url = 'https://api.weibo.com/oauth2/authorize?client_id='.self::WEIBO_APPKEY.'&response_type=code&redirect_uri='.urlencode('http://www.abiza.cn/wbloginredirect');
+	     
+	    header('Location: '.$authorize_url);
+	}
+	
+	Public function wbloginredirect()
+	{
+	    if (!empty($_GET['code'])) {
+	         
+	        $AuthorizationCode = $_GET['code'];
+	        $AccessToken_url = 'https://api.weibo.com/oauth2/access_token'.
+	            '?client_id='.self::WEIBO_APPKEY.
+	            '&client_secret='.self::WEIBO_APPSERCET.
+	            '&grant_type=authorization_code'.
+	            '&redirect_uri='.urlencode('http://www.abiza.cn/wbloginredirect').
+	            '&code='.$AuthorizationCode;
+	         
+	        $AccessToken_rs = $this->curl($AccessToken_url,'post');
+	        //exit($AccessToken_rs);
+	        $AccessToken_json = json_decode($AccessToken_rs);
+	        
+	        $AccessToken = null;
+	        if ($AccessToken_rs){
+	            $AccessToken = $AccessToken_json->access_token;
+	        }else{
+	            exit('无法取得$AccessToken');
+	        }
+	         
+	        $OpenID_url = 'https://api.weibo.com/2/account/get_uid.json?source='.self::WEIBO_APPKEY.'&access_token='.$AccessToken;
+	         
+	        $OpenID_url_rs = $this->curl($OpenID_url);
+	        //exit($OpenID_url_rs);
+	        $OpenID_url_json = json_decode($OpenID_url_rs);
+	         
+	        $OpenID = null;
+	        $UserInfo = null;
+	        if (!empty($OpenID_url_json)){
+	             
+	            $OpenID = $OpenID_url_json->uid;
+	             
+	            // 获取用户信息
+	            $get_user_info_url = 'https://api.weibo.com/2/users/show.json'.
+	                '?access_token='.$AccessToken.
+	                '&source='.self::WEIBO_APPKEY.
+	                '&uid='.$OpenID;
+	             
+	            $get_user_info_rs = $this->curl($get_user_info_url);
+	             
+	            if (!empty($get_user_info_rs)) {
+	                $UserInfo = json_decode($get_user_info_rs);
+	            }else{
+	                exit('无法取得QQ用户信息');
+	            }
+	             
+	             
+	            // 保存到session备用
+	            session('TPAuth',array(
+	                'vendor'=>'weibo',
+	                'openid'=>$OpenID,
+	                'info'=>$UserInfo,
+	            ));
+	             
+	        } else {
+	            exit('无法取得openid');
+	        }
+	         
+	        // 查找peopel数据表，得到people_id
+	        $people_id = M('people')->where("openid_wb='$OpenID'")->getField('id');
+	         
+	        if ($people_id){
+	             
+	            $this->login($people_id,false);
+	            header('Location: '.$this->make_rd_url('home'));
+	        }else{
+	             
+	            // 没有注册手机，进入注册流程
+	            header('Location: '.$this->make_rd_url('register'));
+	             
+	        }
+	         
+	    }
+	     
+	     
+	     
+	}
+	
+	/*
+	 * 保存re token 以便授权后恢复
+	 */
+	private function saveReNToken(){
+	    if (!empty($_GET['token'])) session('token',$_GET['token']);
+	    if (!empty($_GET['re'])) session('re',$_GET['re']);
+	    
+	    //exit('echo '.$_GET['token'].' echo '.$_GET['re']);
+	}
+	
+	/*
+	 * 授权后恢复re token 
+	 */
+	private function make_rd_url($action){
+	    $token = session('token');
+	    $re_url = '/index.php?g=Xiaoqu&m=People&a='.$action;
+	    if (!empty($token)) $re_url .= '&token='.$token;
+	     
+	    $af_jump_re = session('re');
+	     
+	    if (!empty($af_jump_re)) $re_url = urldecode($af_jump_re);
+	    
+	    return $re_url;
+	}
+	
+	private function curl($url,$method = 'get'){
+	    // 创建一个cURL资源
+	    $ch = curl_init($url);
+	    
+	    // 设置URL和相应的选项
+	    curl_setopt($ch, CURLOPT_HEADER, 0);
+	    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+	    
+	    if ($method == 'post') curl_setopt ( $ch, CURLOPT_POST, 1 );
+	    
+	    // 抓取URL并把它传递给浏览器
+	    $rs = curl_exec($ch);
+	    
+	    if ($rs === false){
+	        if($errno = curl_errno($ch)) {
+	            $error_message = curl_strerror($errno);
+	            echo "cURL error ({$errno}):\n {$error_message}";
+	        }
+	    }else{
+	        //echo '正常';
+	    }
+	    
+	    // 关闭cURL资源，并且释放系统资源
+	    curl_close($ch);
+	    
+	    return $rs;
+	    
 	}
 }

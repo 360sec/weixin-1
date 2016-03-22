@@ -77,7 +77,6 @@ $(".m-right-pop-bg2").click( function() {
 
 <div class="paylists"  id="paylists" onclick="document.getElementById('paylists').style.display='';">
     <ul>
-    	<li><a onclick="return checkWXB(this);" href="{ZF::U('Pay/easypay',array('token'=>$token,'wecha_id'=>$wecha_id,'orderid'=>$cartData['orderid']))}">支付宝(亚天担保)</a></li>
     <volist name="payment" id="pay">
         <li>
         <a onclick="return checkWXB(this);" href="{ZF::U('Pay/'.$pay['pay_code'],array('token'=>$token,'wecha_id'=>$wecha_id,'orderid'=>$cartData['orderid']))}">{ZF:$pay.pay_name}</a></li>
@@ -151,7 +150,7 @@ function is_weixin(){
 <ul class="m-uc-order-v-infobox">
 <p>订单编号：{ZF:$cartData.orderid}</p>
 <li><span class="tit">订单状态：</span>
-<php>if($cartData['paid']){echo '<span style="color:green; font-weight: bold;">已付款</span>';}else{echo '<span style="color:red; font-weight: bold;">未付款</span>';}</php>，
+<php>if($cartData['paid']){echo '<span style="color:green; font-weight: bold;">已付款</span>';}else{ if($cartData['payment']=='0'){echo '<span style="color:green;font-weight: bold;">货到付款|</span>';} echo '<span style="color:red; font-weight: bold;">未付款</span>';}</php>，
 <php>if($cartData['sent']){echo '<b class="orderStatus">已发货</b>';}else{echo '<b class="orderStatus">待发货</b>';}</php>
 </li>
 

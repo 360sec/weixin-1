@@ -383,5 +383,195 @@ class BaseAction extends Action
 			
 		}
 	}
+	
+	/**
+	 * 或取一个社区下的所有店铺，包括社区号和商家号下的店铺
+	 * @param String $token 社区的任意一个店铺的token
+	 * @param Array $tokens 引用传值，会填充上所有店铺的token索引数组
+	 * @return Ambigous <NULL, mixed> 当前社区下所有店铺的元数据
+	 */
+	protected function getCommunityTokens($token, &$tokens = NULL) 
+	{
+	    
+	    $tokens = array();
+	    $wxusers = null;
+	    
+        // 获取帐号所选择的社区 community_id
+        $community_id = $this->getCommunityIDByToken($token);
+        
+        if (!empty($community_id)) {
+            // 查找该社区下的所有帐号的uid
+            $community_uids = M('Users')->where(array('community_id'=>$community_id))->field(array('id'))->select();
+            
+            $community_uids_array = array();
+            foreach ($community_uids as $community_uids_row){
+                array_push($community_uids_array, $community_uids_row['id']);
+            }
+            
+            if (!empty($community_uids_array)){
+                // 查找这些帐号下的所有店铺
+                $community_wxusers = M('Wxuser')->where(array('uid'=>array('in',$community_uids_array)))->select();
+                
+                if (!empty($community_wxusers)){
+                    
+                    $wxusers = $community_wxusers;
+                    
+                    foreach ($community_wxusers as $community_wxusers_row){
+                        array_push($tokens, $community_wxusers_row['token']);
+                    }
+                }
+            }
+        }
+	        
+	    
+	    return $wxusers;
+	    
+	}
+	
+	/**
+	 * 获取当前店铺的所属社区ID
+	 * @return mixed|NULL|string[]|unknown[]|unknown|boolean
+	 */
+	protected function getCommunityIDByToken($token)
+	{
+	    
+	    $uid = M('Wxuser')->where(array('token'=>$token))->getField('uid');
+	     
+	    if (!empty($uid)) {
+	         
+	        // 获取帐号所选择的社区 community_id
+	        $community_id = M('Users')->where(array('id'=>$uid))->getField('community_id');
+	        
+	        if (!empty($community_id)) return $community_id;
+	        else return false;
+	        
+	    }
+	}
+	
+	/**
+	 * 获取一个政区内的所有社区
+	 * @param unknown $district_id
+	 */
+	protected function getCommunitysByDistrict($district_id, &$conmmunity_ids)
+	{
+	    $communitys = M('region_community')->where(array('district_id'=>$district_id))->select();
+	    
+	    if (!empty($communitys)) {
+	        $conmmunity_ids = array();
+	        foreach ($communitys as $communitys_row) {
+	            array_push($conmmunity_ids, $communitys_row['id']);
+	        }
+	    }
+	    
+	    return $communitys;
+	}
+	
+	protected function getDistrictIDByToken($token)
+	{
+	    $community_id = $this->getCommunityIDByToken($token);
+	    $district_id = $this->getDistrictIDByCommunity($community_id);
+	    return $district_id;
+	    
+	}
+	
+	/**
+	 * 获取某个社区所属的政区ID
+	 * @param unknown $community_id
+	 * @return mixed|NULL|string[]|unknown[]|unknown
+	 */
+	protected function getDistrictIDByCommunity($community_id)
+	{
+	    $district_id = M('region_community')->where(array('id'=>$community_id))->getField('district_id');
+	    return $district_id;
+	}
+	
+	/**
+	 * 根据一个店铺token，获取该店铺所在政区内的所有社区
+	 * @param unknown $token
+	 * @param unknown $community_ids
+	 * @return mixed|string|boolean|NULL|unknown
+	 */
+	protected function getCommunitysOfDistrictByToken($token, &$community_ids)
+	{
+	    $district_id = $this->getDistrictIDByToken($token);
+	    
+	    $community_ids = array();
+	    $communitys = $this->getCommunitysByDistrict($district_id,$community_ids);
+	    
+	    return $communitys;
+	}
+	
+	protected function getCommunityusersOfDistrictByToken($token, &$community_user_ids)
+	{
+	    $community_ids = array();
+	    $this->getCommunitysOfDistrictByToken($token, $community_ids);
+	     
+	    $users = M('users')->where(array(
+	        'community_id'=>array('in',$community_ids),
+	        'account_type'=>1,
+	    ))->select();
+	    
+	    $community_user_ids = array();
+	    if (!empty($users)) {
+	        foreach ($users as $users_row) {
+	            array_push($community_user_ids, $users_row['id']);
+	        }
+	    }
+	    
+	    return $users;
+	}
+	
+	protected function getCommunitysitesOfDistrictByToken($token, &$community_wxuser_tokens)
+	{
+	    $community_wxuser_tokens = array();
+	    
+	    $community_user_ids = array();
+	    $this->getCommunityusersOfDistrictByToken($token, $community_user_ids);
+	    
+	    $wxusers = M('wxuser')->where(array(
+	        'uid'=>array('in',$community_user_ids),
+	    ))->select();
+	    
+	    $filted_wxusers = array_filter($wxusers,function ($wxuser) use ($wxusers) {
+	        // Fuck !
+	        $sites = array();
+	        foreach ($wxusers as $wxusers_row) {
+	            if ($wxusers_row['uid'] == $wxuser['uid']) {
+	                array_push($sites, $wxusers_row);
+	            }
+	        }
+	        
+	        if (count($sites) === 1) {
+	            return true;
+	        }else{
+	            
+	            // 排序，取第一个 
+	            usort($sites, function ($a, $b) {
+	                if (intval($a['createtime']) > intval($b['createtime'])) {
+	                    return 1;
+	                } elseif (intval($a['createtime']) < intval($b['createtime'])) {
+	                    return -1;
+	                } else {
+	                    return 0;
+	                }
+	            });
+	            
+	            if (intval($sites[0]['id']) == intval($wxuser['id'])) {
+	                return true;
+	            } else {
+	                return false;
+	            }
+	            
+	        }
+	    });
+	    
+	    if (!empty($filted_wxusers)) {
+	        foreach ($filted_wxusers as $filted_wxusers_row) {
+	            array_push($community_wxuser_tokens, $filted_wxusers_row['token']);
+	        }
+	    }
+	    
+	    return $filted_wxusers;
+	}
 }
 ?>

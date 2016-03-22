@@ -58,7 +58,7 @@ class XiaoquAction extends BaseAction {
 		$username = 'itcocoa';
 		$password = md5('piao0720');
 		$phones = implode(',',$phones);
-		$gateway = 'http://api.smsbao.com/sms?u='.$username.'&p='.$password.'&m='.$phones.'&c=【我的小区】'.$content;
+		$gateway = 'http://api.smsbao.com/sms?u='.$username.'&p='.$password.'&m='.$phones.'&c=【亚商圈】'.$content;
 		$err = array(
 					'0'  =>"发送成功", 
 					"-1" => "参数不全",

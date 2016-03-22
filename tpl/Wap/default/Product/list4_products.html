@@ -271,6 +271,9 @@ $(function() {
 					
 						/*结束！设置列表模板的高度*/
 				
+						/****  状态保存  *****/
+						history.pushState({page:(parseInt(_page)-1),content:$("#m_list").html()},null,"#page"+(parseInt(_page)-1));
+						/****  状态保存  *****/
 						
 					}
 				});
@@ -278,6 +281,23 @@ $(function() {
 		});
 	}
 });
+
+
+
+/****  状态恢复  *****/
+if (history.state){
+	$("#m_list").html(history.state.content);
+	$('#show_more').attr('page',parseInt(history.state.page)+1);
+}else{
+	history.replaceState({page:1,content:$("#m_list").html()},null,"#page1");
+}
+window.onpopstate = function(e){
+	if (history.state){
+		$("#m_list").html(history.state.content);
+		$('#show_more').attr('page',parseInt(history.state.page)+1);
+	}
+}
+/****  状态恢复  *****/
 </script>
 
 		<if condition="$kefu['sc'] eq '1'">

@@ -84,6 +84,20 @@ class IndexAction extends WapAction{
 		
 		$goods = array();
 		$where = array();
+		
+		
+		
+		
+		
+		
+		$brand_id = 0;
+		if (!empty($_GET['brand_id'])){
+		    $brand_id = intval($_GET['brand_id']);
+		}
+		
+		if (!empty($brand_id)){
+		    $where['brand'] = $brand_id;
+		}
 
 		$shopclassify=M('Classify')->where(array('token'=>$this->_get('token'),'status'=>1,'id'=>$_GET['catid']))->order('sorts desc')->select();
 		$shopclassify=$this->convertLinks($shopclassify);//加外链等信息
@@ -101,12 +115,29 @@ class IndexAction extends WapAction{
 		
 		$catids_str = strval($community_catid);
 		foreach ($allChilds as $child){
-			if (!empty($catids_str)) $catids_str = $catids_str .',';
+			if ($catids_str!=='') $catids_str = $catids_str .',';
 			
 			$catids_str = $catids_str . $child;
 		}
 		
-		$where['community_catid'] = array('in',$catids_str); 
+		$where['community_catid'] = array('in',$catids_str);
+		
+		// 过滤掉没有商品数据的品牌
+		// 先找出所有当前分类下商品所选择的品牌id
+		$goods_brands_m = M('Product');
+		$goods_brands = $goods_brands_m->field('distinct brand')->where('`brand`!=0 AND `community_catid` in ('.$catids_str.')')->select();
+		
+		$goods_brands_ids = '';
+		foreach ($goods_brands as $goods_brands_row) {
+		    if ($goods_brands_ids!=='') $goods_brands_ids = $goods_brands_ids .',';
+		    	
+		    $goods_brands_ids = $goods_brands_ids . $goods_brands_row['brand'];
+		}
+		
+		
+		// 查找所有品牌数据
+		$brands = M('Brand')->where('status=1 AND id in('.$goods_brands_ids.')')->select();
+		
 		
 		
 		$keyword = ''; // 默认搜索关键字，为空字符串时不搜索
@@ -119,12 +150,18 @@ class IndexAction extends WapAction{
 			$where['name'] = array('like','%'.$keyword.'%');
 		}
 		
+		// 只找出当前社区的商品
+		$merchant_tokens = null;
+		$this->getCommunityTokens($this->_get('token'), $merchant_tokens);
+		//print_r($merchant_tokens);
 		
-		// 异步分页加载
+		$where['token'] = array(
+		    'in',$merchant_tokens
+		);
+		
 		
 		$page_size = 10;
 		$current_page = 1;
-
 		
 		if (!empty($_GET['current_page'])){
 			$current_page = intval($_GET['current_page']);
@@ -132,27 +169,29 @@ class IndexAction extends WapAction{
 		
 		$limt_offset = ($current_page*$page_size)-$page_size;
 		
-		$goods = M('Product')->where($where)->limit($limt_offset,$page_size)->select();
+		$goods_m = M('Product');
 		
-		if (!empty($_GET['json'])){
-			
-			echo json_encode($goods);
-			exit();
-			
-		}else{
-			
-			$info = $this->getClassfy();
-			
-			$this->assign('allClasses',$this->allClasses);
-			$this->assign('classfy',$info);
-			$this->assign('page_size',$page_size);
-			$this->assign('goods',$goods);
-			$this->display();
-			
-		}
+		$goods = $goods_m->where($where)->limit($limt_offset,$page_size)->select();  $this->assign('sql',$goods_m->getLastSql());
+		$goods_count = M('Product')->where($where)->field('count(*)')->getField('count(*)');
 		
+		
+		
+		$info = $this->getClassfy();
+		
+		$this->assign('allClasses',$this->allClasses);
+		$this->assign('classfy',$info);
+		$this->assign('page_size',$page_size);
+		$this->assign('goods',$goods);
+		$this->assign('keyword',$keyword);
+		$this->assign('brands',$brands);
+		$this->assign('brand_id',$brand_id);
+		$this->assign('community_catid',$community_catid);
+		$this->assign('page_size',$page_size);
+		$this->assign('goods_count',$goods_count);
+		$this->assign('page_count',ceil($goods_count/$page_size));
+		$this->assign('current_page',$current_page);
+		$this->display();
 
-		
 	}
 	
 	/**

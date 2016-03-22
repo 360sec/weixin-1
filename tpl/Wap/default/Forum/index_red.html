@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+	<head>
+		<title>{ZF:$config.forumname}</title>
+		<meta charset="utf-8">
+		<meta content="" name="description">
+		<meta content="" name="keywords">
+		<meta content="application/xhtml+xml;charset=UTF-8" http-equiv="Content-Type">
+		<meta content="no-cache,must-revalidate" http-equiv="Cache-Control">
+		<meta content="no-cache" http-equiv="pragma">
+		<meta content="0" http-equiv="expires">
+		<meta content="telephone=no, address=no" name="format-detection">
+		<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
+		<link rel="stylesheet" type="text/css" href="{ZF::STATICS}/forum/css/main.css" ></link>
+		<link rel="stylesheet" type="text/css" href="{ZF::STATICS}/forum/css/dialog.css" ></link>
+		<script src="{ZF::STATICS}/forum/js/jquery_min.js" ></script>
+		<script src="{ZF::STATICS}/forum/js/main.js" ></script>
+		<script src="{ZF::STATICS}/forum/js/dialog_min.js" ></script>
+
+
+
+		<script>
+	       function collectTrends(tid, uid){
+		        loading(true);
+	    	    $.post("{ZF::U('Forum/likeAjax',array('token'=>$_GET['token']))}",{
+	    	        "tid"  : tid,
+	    	        "uid"  : uid,
+		    	    },function(res){
+		    	    	loading(false);
+		    	        if(res) {
+							
+			    	        location.reload();
+		    	        }
+
+		    	    });
+	        }
+	       function praiseTrends(tid, uid){
+	    	    loading(true);
+	    	    $.post("{ZF::U('Forum/favourAjax',array('token'=>$_GET['token']))}",{
+	    	        "tid"  : tid,
+	    	        "uid"  : uid,
+		    	    },function(res){
+		    	    	loading(false);
+		    	        if(res) {
+			    	        location.reload();
+		    	        }
+
+		    	    });
+	        }
+		</script>
+	</head>
+	<body onselectstart="return true;" ondragstart="return false;" class="discuss_index" style="background-color:#FFF;">
+		<div id="container" class="container" style="background:url()">
+			
+			<header>
+				<div class="header_1" style="background:#CC0000; color:#FFF; height:auto;">
+
+					<p style=" font-size:12pt; font-weight:bold; line-height:50pt; text-align:center;">{ZF:$config.forumname}</p>
+					<p style="display:none;">
+						<a href="javascript:;" class="label"><span class="icons icons_post">&nbsp;</span>{ZF:$count}帖子</a>
+						<a href="javascript:;" class="label"><span class="icons icons_visisted">&nbsp;</span>{ZF:$config.pv}访问</a>
+					</p>
+
+				</div>
+			    <include file="cats_red"/>
+			</header>
+			
+			<div class="body">
+				<div id="list_article" class="list_article">
+					
+					<volist id="list" name="list">
+						<article style="border-radius:0px;"><!--帖子-->
+							<a style="display: block;" href="{ZF::U('Forum/comment',array('tid'=>$list['id'],'wecha_id'=>$_GET['wecha_id'],'token'=>$_GET['token'],'catid'=>$catid))}">	
+							     <div style="overflow: hidden;">
+							     	<div style="width:100px; float: left;"><div style="padding-bottom:100%; background-color:#EEE;<if condition="$list['photoArr'] neq ''">background-image:url({ZF:$list['photoArr'][0]});background-size:cover; background-position:center center;</if>"></div></div>
+							     	<p>
+							     	    <div style="padding:0 0  0 110px;">
+							     	        <h4 style="height:30px; line-height:30px; overflow: hidden;white-space: nowrap;text-overflow: ellipsis;">{ZF:$list.title}</h4>
+							     	        <div style=" font-size:8pt; height:70px; overflow: hidden;">{ZF::htmlspecialchars_decode(mb_substr($list['content'],0,60),ENT_QUOTES)}...</div>
+							     	    </div>
+							     	</p>
+							     </div>
+					        </a>
+	  					</article>
+					
+					</volist>
+					
+				</div>
+			</div>
+			<include file="footermenu"/>
+		</div>
+		
+		
+<script type="text/javascript">
+window.shareData = {  
+            "moduleName":"Forum",
+            "moduleID":"0",
+            "imgUrl": "{ZF:$config.logo}", 
+            "timeLineLink": "{ZF::C('site_url')}{ZF::U('Forum/index',array('token'=>$_GET['token']))}",
+            "sendFriendLink": "{ZF::C('site_url')}{ZF::U('Forum/index',array('token'=>$_GET['token']))}",
+            "weiboLink": "{ZF::C('site_url')}{ZF::U('Forum/index',array('token'=>$_GET['token']))}",
+            "tTitle": "{ZF:$config.forumname}",
+            "tContent": "{ZF:$config.forumname}"
+        };
+</script>
+{ZF:$shareScript}
+
+	</body>
+
+	
+<script type="text/javascript">
+    $(document).ready(function(){ 
+        var range = 50;             //距下边界长度/单位px  
+		var _srollPos = 0;
+		var pageNum = 2;
+        var totalheight = 0; 
+        var main = $("#list_article");
+		var js = 0;
+        $(window).scroll(function(){
+            var srollPos = $(window).scrollTop();    //滚动条距顶部距离(页面超出窗口的高度)  
+           if(srollPos<_srollPos){
+                return;
+            }else{
+            	_srollPos = srollPos;
+            }
+            totalheight = parseFloat($(window).height()) + parseFloat(srollPos);  
+            if(($(document).height()-range) <= totalheight ) {
+			
+					$.ajax({
+						url: "{ZF::U('Forum/moreList',array('token'=>$_GET['token'],'wecha_id'=>$_GET['wecha_id'],'catid'=>$catid))}"+"&p="+pageNum,
+						type:"post",
+						data:"pageNum="+pageNum,
+						success: function(res){
+							if(res == 0){
+								if(js == 0){
+									$('#list_article').append('<article style="display:block" id="noMore"><header style="margin:7px;text-align:center;">没有更多帖子了</header></article>');
+								}
+								js = 1;
+							}else{
+								main.append(res);
+								pageNum ++;
+								
+							}
+							
+						}
+					});
+            }
+        });
+		
+    }); 
+</script> 
+</html>

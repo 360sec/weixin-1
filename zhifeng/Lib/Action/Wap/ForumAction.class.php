@@ -15,6 +15,7 @@ class ForumAction extends WapAction{
 		parent::_initialize();
 		$this->checked_login();
 		$token = $this->_request('token');
+		//$this->assign('token',$token);
 		$isopen = M('Forum_config')->field('isopen,bgurl')->where("token = '$token'")->find();
 		
 		if($isopen['isopen'] == 0){
@@ -121,7 +122,12 @@ class ForumAction extends WapAction{
 		$this->assign('list',$list);
 		
 		$this->assign('wecha_id',$wecha_id);
-		$this->display();
+		
+		// 默认模板
+		//$this->display();
+		
+		// 红色门户式模板
+		$this->display('index_red');
 
 	
 	}
@@ -239,19 +245,116 @@ class ForumAction extends WapAction{
 			$this->error('您需要关注官方公众号才能进入');
 		}
 		
+		/*
 		S("fans_".$token."_".$uid,NULL);
 		$fans = $this->fans;
 			
 		if($fans == NULL){
 		
 			$this->error('您需要完善个人信息才能进入发帖',U('Userinfo/index',array('token'=>$token,'wecha_id'=>$uid,'redirect'=>'Forum/add|wecha_id:'.$uid)));
-		}		
+		}		*/
+		
+		require_once SITE_ROOT.'/'.APP_PATH."Lib//ORG/WeixinSDK/JSSDK.php";
+		 
+		$jssdk = new JSSDK("wx54a224e2def2d349", "6b66c02c993e1a31fa4219c5dbe4ae4f");
+		 
+		$signPackage = $jssdk->GetSignPackage();
+		
+		$this->assign('signPackage',$signPackage);
+		
 		$this->display();
 	
 	}
 	
+	public function uploadphoto()
+	{
+	    
+	    
+			// 照片上传
+		if (IS_POST){
+			// 检查权限
+			if (empty($this->token)) {
+				exit(json_encode(array('status'=>'error','msg'=>'你没有权限上传！')));
+			}
+				
+			// 检查数据可靠性
+			if (empty($_POST) || empty($_POST['image0'])){
+				exit(json_encode(array('status'=>'error','msg'=>'检测不到上传数据，可能是因为上传数据的结构不是约定的！')));
+			}
+			
+			$photos = array();
+			
+			foreach ($_POST as $key=>$image){
+			
+				// 保存照片数据为文件
+				$upload_data = explode(",", $image);
+				$upload_data = base64_decode($upload_data[1]);
+					
+				$get_image_url_path = null;
+				$upload_dirname = $this->___init_ppc_data_dir($get_image_url_path); // 引用传参
+				$save_image_filename = time().'_'.$key.'_'.rand(10000,99999).'.png';
+				
+				$save_status = @file_put_contents($upload_dirname.'/'.$save_image_filename, $upload_data);
+				
+				if ($save_status){
+					array_push($photos, $get_image_url_path.'/'.$save_image_filename);
+				}
+			
+			}
+			
+			
+			if (empty($photos)){
+				exit(json_encode(array('status'=>'error','msg'=>'由于服务器系统的原因，数据没能成功保存！')));
+			}else{
+				// 保存照片文件成功，返回url数据到前端
+				exit(json_encode(array('status'=>'success','urls'=>$photos,'msg'=>'已经成功保存了'.count($photos).'张照片，'.$intro_update_msg)));
+			}
+		}
+	    
+		
+		
+	    $this->display();
+	    
+	}
+	
+	protected function ___init_ppc_data_dir( &$url_path ){
+	    	
+	    $token = $_SESSION['token'];
+	    $first_c = mb_substr($_SESSION['token'],0,1,'UTF-8');
+	
+	    $dir_Uploads =  SITE_ROOT.'/data/Uploads';
+	    $dir_first_c =  SITE_ROOT.'/data/Uploads/'.$first_c;
+	    $dir_token_d =  SITE_ROOT.'/data/Uploads/'.$first_c.'/'.$token;
+	    $dir_ckeditor_d = SITE_ROOT.'/data/Uploads/'.$first_c.'/'.$token.'/PhonePhotoUpload';
+	
+	    if (!file_exists($dir_Uploads)||!is_dir($dir_Uploads)){
+	        mkdir($dir_Uploads,0777);
+	    }
+	
+	    if (!file_exists($dir_first_c)||!is_dir($dir_first_c)){
+	        mkdir($dir_first_c,0777);
+	    }
+	
+	    if (!file_exists($dir_token_d)||!is_dir($dir_token_d)){
+	        mkdir($dir_token_d,0777);
+	    }
+	
+	    if (!file_exists($dir_ckeditor_d)||!is_dir($dir_ckeditor_d)){
+	        mkdir($dir_ckeditor_d,0777);
+	    }
+	
+	    if (!file_exists($dir_ckeditor_d)||!is_dir($dir_ckeditor_d)){
+	        echo '初始化数据存放目录失败，不能使用上传功能！';
+	        exit();
+	    }else{
+	        $url_path = '/data/Uploads/'.$first_c.'/'.$token.'/PhonePhotoUpload';
+	        return $dir_ckeditor_d;
+	    }
+	}
+	
 	//发布新帖子
 	public function checkAdd(){
+	    
 		$data = array();
 		$data['uid'] = $this->_post('wecha_id');
 		
@@ -263,8 +366,11 @@ class ForumAction extends WapAction{
 		
 		
 		$wecha_id = $data['uid'];	
-		$userinfo = M('Userinfo')->field('wechaname')->where("wecha_id = '$wecha_id'")->find();
-		$data['uname'] = $userinfo['wechaname'] ? $userinfo['wechaname'] : '游客';
+		
+		//$userinfo = M('Userinfo')->field('wechaname')->where("wecha_id = '$wecha_id'")->find();
+		//$data['uname'] = $userinfo['wechaname'] ? $userinfo['wechaname'] : '游客';
+		$data['uname'] = $this->getUserNick($wecha_id);
+		
 		$data['token'] = $this->_post('token');
 		$data['createtime'] = time();
 		
@@ -418,17 +524,26 @@ class ForumAction extends WapAction{
 			$comment["$k"]["uinfo"] = $this->uinfo($v['uid'],$token);
 			if($v['replyid'] != NULL){
 				$reuid = $v['replyid'];
-				$userinfo = M('Userinfo')->field('wechaname')->where("wecha_id = '$reuid'")->find();
-				$comment[$k]['reuname'] = $userinfo['wechaname'] ? $userinfo['wechaname'] : '游客';
+				//$userinfo = M('Userinfo')->field('wechaname')->where("wecha_id = '$reuid'")->find();
+				//$comment[$k]['reuname'] = $userinfo['wechaname'] ? $userinfo['wechaname'] : '游客';
+				$comment[$k]['reuname'] = $this->getUserNick($reuid);
 				
 			}
 		}
+		
+		
+		$config = M('Forum_config')->where("token = '$token'")->find();
+		$this->assign('config',$config);
 
 		$this->assign('wecha_id',$wecha_id);
 		$this->assign('cnum',$cnum);
 		$this->assign('comment',$comment);
 		$this->assign('topics',$topics);
-		$this->display();
+		// 默认模板
+		//$this->display();
+		
+		// 红色门户式模板
+		$this->display('comment_red');
 	
 	}
 
@@ -443,8 +558,9 @@ class ForumAction extends WapAction{
 		$data['tid'] = $this->_post('tid','intval');
 		
 		$wecha_id = $data['uid'];
-		$userinfo = M('Userinfo')->field('wechaname')->where("wecha_id = '$wecha_id'")->find();
-		$data['uname'] = $userinfo['wechaname'] ? $userinfo['wechaname'] : '游客';
+		//$userinfo = M('Userinfo')->field('wechaname')->where("wecha_id = '$wecha_id'")->find();
+		//$data['uname'] = $userinfo['wechaname'] ? $userinfo['wechaname'] : '游客';
+		$data['uname'] = $this->getUserNick($wecha_id);
 		
 		$data['content'] = $this->_post('form_article');
 		$data['token'] = $this->_post('token');
@@ -484,8 +600,9 @@ class ForumAction extends WapAction{
 				$message['fromuname'] = $data['uname'];
 				
 			$touid = $uid['uid'];
-			$userinfo = M('Userinfo')->field('wechaname')->where("wecha_id = '$touid'")->find();
-			$message['touname'] = $userinfo['wechaname'] ? $userinfo['wechaname'] : '游客';
+			//$userinfo = M('Userinfo')->field('wechaname')->where("wecha_id = '$touid'")->find();
+			//$message['touname'] = $userinfo['wechaname'] ? $userinfo['wechaname'] : '游客';
+			$message['touname'] = $this->getUserNick($touid);
 
 				
 				M('Forum_message')->add($message);
@@ -574,9 +691,9 @@ class ForumAction extends WapAction{
 		$data['token'] = $this->_post('token');
 		$token = $data['token'];
 		$wecha_id = $data['uid'];
-		$userinfo = M('Userinfo')->field('wechaname')->where("wecha_id = '$wecha_id'")->find();
-		$data['uname'] = $userinfo['wechaname'] ? $userinfo['wechaname'] : '游客';
-		
+		//$userinfo = M('Userinfo')->field('wechaname')->where("wecha_id = '$wecha_id'")->find();
+		//$data['uname'] = $userinfo['wechaname'] ? $userinfo['wechaname'] : '游客';
+		$data['uname'] = $this->getUserNick($wecha_id);
 		
 		$data['content'] = $this->_post('form_article');
 		$data['createtime'] = time();
@@ -609,9 +726,9 @@ class ForumAction extends WapAction{
 				$message['fromuname'] = $data['uname'];
 				
 				$touid = $message['touid'];
-				$userinfo = M('Userinfo')->field('wechaname')->where("wecha_id = '$touid'")->find();
-				$message['touname'] = $userinfo['wechaname'] ? $userinfo['wechaname'] : '游客';
-				
+				//$userinfo = M('Userinfo')->field('wechaname')->where("wecha_id = '$touid'")->find();
+				//$message['touname'] = $userinfo['wechaname'] ? $userinfo['wechaname'] : '游客';
+				$message['touname'] = $this->getUserNick($touid);
 
 				M('Forum_message')->add($message);
 				if($conf['comcheck'] == 1){
@@ -641,8 +758,9 @@ class ForumAction extends WapAction{
 		$token = $this->_get('token');
 
 		
-		$userinfo = M('Userinfo')->field('wechaname')->where("wecha_id = '$uid'")->find();
-		$uname = $userinfo['wechaname'] ? $userinfo['wechaname'] : '游客';
+		//$userinfo = M('Userinfo')->field('wechaname')->where("wecha_id = '$uid'")->find();
+		//$uname = $userinfo['wechaname'] ? $userinfo['wechaname'] : '游客';
+		$uname = $this->getUserNick($uid);
  
 		$list = M('Forum_topics')->order('createtime DESC')->where("uid = '$uid' AND status != 0 AND token = '$token'")->select();
 
@@ -676,7 +794,9 @@ class ForumAction extends WapAction{
 
 		
 		$userinfo = M('Userinfo')->field('wechaname,portrait')->where("wecha_id = '$uid'")->find();
-		$uname = $userinfo['wechaname'] ? $userinfo['wechaname'] : '游客';
+		//$uname = $userinfo['wechaname'] ? $userinfo['wechaname'] : '游客';
+		$uname = $this->getUserNick($uid);
+		
 		if($userinfo['portrait'] == ''){
 			$portrait = './tpl/static/forum/images/face.png';
 		}else{
@@ -714,8 +834,9 @@ class ForumAction extends WapAction{
 		$token = $this->_get('token');
 		$list = M('Forum_topics')->order('createtime DESC')->where("status = 1 AND token = '$token' AND likeid like '%$uid%'")->select();
 		
-		$userinfo = M('Userinfo')->field('wechaname')->where("wecha_id = '$uid'")->find();
-		$uname = $userinfo['wechaname'] ? $userinfo['wechaname'] : '游客';
+		//$userinfo = M('Userinfo')->field('wechaname')->where("wecha_id = '$uid'")->find();
+		//$uname = $userinfo['wechaname'] ? $userinfo['wechaname'] : '游客';
+		$uname = $this->getUserNick($uid);
 		
 		$mytopicsnum = M('Forum_topics')->field('id')->order('createtime DESC')->where("uid = '$uid' AND status = 1 AND token = '$token'")->count();
 		$mymessagenum = M('Forum_message')->field('id')->where("token = '$token' AND touid = '$uid' AND status = 1")->count();
@@ -741,15 +862,16 @@ class ForumAction extends WapAction{
 	//我的消息页面
 	public function myMessage(){
 		
-		$uid = $this->_get('wecha_id');
+		$uid = $this->_get('wecha_id');$this->getUserNick($uid);
 		if($uid == ''){
 			$this->error('您需要关注官方公众号才能进入');
 		}
 		
 		$token = $this->_get('token');
 		
-		$userinfo = M('Userinfo')->field('wechaname')->where("wecha_id = '$uid'")->find();
-		$uname = $userinfo['wechaname'] ? $userinfo['wechaname'] : '游客';
+		//$userinfo = M('Userinfo')->field('wechaname')->where("wecha_id = '$uid'")->find();
+		//$uname = $userinfo['wechaname'] ? $userinfo['wechaname'] : '游客';
+		$uname = $this->getUserNick($uid);
 		
 		$list = M('Forum_message')->order('createtime DESC')->where("touid = '$uid' AND token = '$token' AND status = 1")->select();
 		
@@ -807,8 +929,9 @@ class ForumAction extends WapAction{
 		
 		
 		$wecha_id = $data['uid'];
-		$userinfo = M('Userinfo')->field('wechaname')->where("wecha_id = '$wecha_id'")->find();
-		$data['uname'] = $userinfo['wechaname'] ? $userinfo['wechaname'] : '游客';
+		//$userinfo = M('Userinfo')->field('wechaname')->where("wecha_id = '$wecha_id'")->find();
+		//$data['uname'] = $userinfo['wechaname'] ? $userinfo['wechaname'] : '游客';
+		$data['uname'] = $this->getUserNick($wecha_id);
 		
 
 		$data['token'] = $this->_post('token');
@@ -869,6 +992,24 @@ class ForumAction extends WapAction{
 		}
 	}
 	
+	// 直接删除贴子
+	public function delTopicsReal(){
+	    $uid = $this->_get('wecha_id');
+	    if($uid == ''){
+	        $this->error('您需要关注官方公众号才能进入');
+	    }
+	
+	    $id = $this->_get('tid','intval');
+	
+	    $token = $this->_get('token');
+	
+	    if(M('Forum_topics')->where("id = $id AND token = '$token' AND uid = '$uid' AND status = 1")->delete()){
+	        $this->success('删除成功');
+	    }else{
+	        $this->error('删除失败');
+	    }
+	}
+	
 	//删除评论
 	public function delComment(){
 		$uid = $this->_get('wecha_id');
@@ -893,14 +1034,50 @@ class ForumAction extends WapAction{
 	protected function uinfo($wid='',$to=''){
 	
 		$uinfo = M('Userinfo')->field('portrait,wechaname')->where("wecha_id = '$wid' AND token = '$to'")->find();
-		if($uinfo['portrait'] == ''){
-			$uinfo['portrait'] = './tpl/static/forum/images/face.png';
+		
+		if (empty($uinfo)) {
+		    $uinfo = array();
+		    $uinfo['wechaname'] = $this->getUserNick($wid);
+		    $uinfo['portrait'] = './tpl/static/forum/images/face.png';
+		} else {
+		    if($uinfo['portrait'] == ''){
+		        $uinfo['portrait'] = './tpl/static/forum/images/face.png';
+		    }
 		}
+		
+		
 		return $uinfo;
 	}
 
 
+	// 获取名字
+	protected function getUserNick($wecha_id) {
+	    
+	    // 判断是不是phone-xxx形式的虚拟wecha_id，是则说明是Xiaoqu模板全局性的手机登录，是people数据表的用户数据
+	    $pattern = '/^'. preg_quote('phone-','/').'(\d{11})$/i';
+	    
+	    $is_people = false;
+	    if (preg_match($pattern, $wecha_id, $matches)) $is_people = true;
+	    
+	    if ($is_people) {
+	        
+	        $phone = $matches[1];
+	        $nickname = M('People')->where("phone = '$phone'")->getField('name');
+	        if (!empty($nickname)) {
+	            return $nickname;
+	        } else {
+	            return '游客';
+	        }
+	    } else {
+	        
+	        // 微信会用户
+	        $userinfo = M('Userinfo')->field('wechaname')->where("wecha_id = '$wecha_id'")->find();
+	        $nickname = $userinfo['wechaname'] ? $userinfo['wechaname'] : '微信用户';
+	        
+	        return $nickname;
+	        
+	    }
+		
+	}
 	
-	
-
 }
